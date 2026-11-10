@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, Boxes, ChartNoAxesCombined, ClipboardList, LayoutDashboard, LogOut, Settings, Package, Menu, X, Eye, EyeOff, ShieldCheck, ArrowRight, Mail, LockKeyhole, CircleAlert } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, Boxes, ChartNoAxesCombined, ClipboardList, LayoutDashboard, LogOut, Settings, Package, Menu, X, Eye, EyeOff, ShieldCheck, ArrowRight, Mail, LockKeyhole, CircleAlert, Bot } from 'lucide-react'
 import { useState } from 'react'
 import { dataBR, numero, somaMovimentos } from './estoque'
 
@@ -7,6 +7,7 @@ export const telas = {
   produtos: { nome: 'Produtos', titulo: 'Gestão de Produtos', resumo: 'Cadastre, consulte e atualize os itens do seu estoque', icone: Package },
   movimentacoes: { nome: 'Movimentações', titulo: 'Movimentação de Estoque', resumo: 'Registre entradas e saídas com rastreabilidade', icone: ClipboardList },
   relatorios: { nome: 'Relatórios', titulo: 'Relatórios', resumo: 'Analise o histórico e acompanhe o comportamento do estoque', icone: ChartNoAxesCombined },
+  stockai: { nome: 'StockAI', titulo: 'StockAI', resumo: 'Um chat para consultar seu estoque.', icone: Bot },
   configuracoes: { nome: 'Configurações', titulo: 'Configurações', resumo: 'Gerencie suas preferências e integrações', icone: Settings },
 }
 

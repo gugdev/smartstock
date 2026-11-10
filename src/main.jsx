@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Estrutura, Login, telas } from './componentes'
 import { Configuracoes, Dashboard, Movimentacoes, Produtos, Relatorios } from './telas'
+import { StockAI } from './stockai'
 import { repositorio } from './estoque'
 import './estilo.css'
 
@@ -46,7 +47,7 @@ function App() {
   if (!email) return <Login entrar={entrar} />
 
   const pagina = paginaAtual(rota)
-  const Tela = { dashboard: Dashboard, produtos: Produtos, movimentacoes: Movimentacoes, relatorios: Relatorios, configuracoes: Configuracoes }[pagina]
+  const Tela = { dashboard: Dashboard, produtos: Produtos, movimentacoes: Movimentacoes, relatorios: Relatorios, stockai: StockAI, configuracoes: Configuracoes }[pagina]
   return <Estrutura pagina={pagina} perfil={estoque.perfil} sair={sair}>
     <Tela estoque={estoque} atualizar={atualizar} email={email} rota={rota} />
   </Estrutura>

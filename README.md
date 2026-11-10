@@ -11,6 +11,8 @@ Aplicação web de gestão de estoque. Esta versão corresponde ao **Dia 2 do pr
 | Dia 3 | 8 | Planejado. Integrar API, autenticação e banco de dados. |
 | Dia 4 | 9 | Planejado. Integração com IA e n8n, testes e finalização. |
 
+A aba StockAI é uma prévia da interface de chat. As sugestões preenchem um rascunho editável, e o envio será habilitado com a integração da Aula 9.
+
 O [Dia 1 no Drive](https://drive.google.com/drive/folders/1pJQsR94L1FCM4bPZbb5G1WI8UZ7Rw5Nl) reúne os materiais de planejamento. O [Dia 2 no Drive](https://drive.google.com/drive/folders/1OAdEekY5SRHekIC_qeBtf2lokSnqcdz9) reúne o enunciado da Aula 7 e os links da entrega. O Figma registra a proposta visual da Aula 6. O dashboard em React usa os saldos e as movimentações da demonstração, por isso seus números podem diferir dos exemplos desenhados no protótipo.
 
 ## Executar
