@@ -2,7 +2,7 @@
 
 Aplicação web de gestão de estoque. Esta versão corresponde ao **Dia 2 do projeto / Aula 7** do Programa de Estágio de Férias.
 
-![Dashboard do SmartStock com indicadores de estoque, gráfico de movimentações e alertas de reposição](evidencias/02-dashboard.png)
+![Dashboard do SmartStock com indicadores de estoque, gráfico de movimentações e alertas de reposição](evidencias/dia-2/02-dashboard.png)
 
 | Projeto | Aula | Evolução |
 | --- | --- | --- |
@@ -10,6 +10,8 @@ Aplicação web de gestão de estoque. Esta versão corresponde ao **Dia 2 do pr
 | **Dia 2** | **7** | **Front-end navegável em React**, com operações locais e interface responsiva. |
 | Dia 3 | 8 | Planejado. Integrar API, autenticação e banco de dados. |
 | Dia 4 | 9 | Planejado. Integração com IA e n8n, testes e finalização. |
+
+O [Dia 1 no Drive](https://drive.google.com/drive/folders/1pJQsR94L1FCM4bPZbb5G1WI8UZ7Rw5Nl) reúne os materiais de planejamento. O [Dia 2 no Drive](https://drive.google.com/drive/folders/1OAdEekY5SRHekIC_qeBtf2lokSnqcdz9) reúne o enunciado da Aula 7 e os links da entrega. O Figma registra a proposta visual da Aula 6. O dashboard em React usa os saldos e as movimentações da demonstração, por isso seus números podem diferir dos exemplos desenhados no protótipo.
 
 ## Executar
 
@@ -50,5 +52,5 @@ Na Aula 8, a API deverá fornecer os dados, validar permissões e gravar a atual
 
 - [Dia 1 / Aula 6 — seis referências em SVG](evidencias/dia-1/). Os nomes e e-mails foram trocados por dados de demonstração na cópia pública.
 - [Protótipo navegável no Figma](https://www.figma.com/proto/sojvdu4i568LOE80M4EpzJ/SmartStock-%E2%80%94-Prot%C3%B3tipo?node-id=3-2&page-id=0%3A1&starting-point-node-id=3%3A2&scaling=scale-down&content-scaling=fixed). Clique em **Entrar** para abrir o Dashboard e use o menu lateral para visitar as demais telas.
-- [Dia 2 / Aula 7 — capturas das telas](evidencias/) e [dashboard em largura de celular](evidencias/09-dashboard-mobile.png).
-- [Vídeo de navegação](evidencias/navegacao.mp4).
+- [Dia 2 / Aula 7 — capturas das telas](evidencias/dia-2/) e [dashboard em largura de celular](evidencias/dia-2/09-dashboard-mobile.png).
+- [Vídeo de navegação](evidencias/dia-2/navegacao.mp4).

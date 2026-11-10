@@ -115,7 +115,21 @@ nav a[aria-current] { background: #44253a; color: #ffadd3; box-shadow: inset 3px
 .destaque h2 span { color: var(--rosa); }
 .destaque h2 + p { color: #e7dae6; margin: 9px 0 17px; line-height: 1.4; font-size: .9rem; }
 .destaque .primario { min-height: 39px; white-space: normal; font-size: .86rem; }
-.destaque .ilustracao-estoque { max-height: 164px; justify-self: end; }
+.destaque .ilustracao-estoque { max-height: 146px; justify-self: end; }
+.dashboard .indicador {
+  display: grid; grid-template-columns: 36px minmax(0, 1fr); column-gap: 10px;
+  align-items: center;
+}
+.dashboard .indicador > p { margin-top: 0; }
+.dashboard .indicador > :is(strong, small) { grid-column: 1 / -1; }
+.dashboard .indicador > strong { margin: 8px 0 4px; }
+.dashboard .lista-reposicao li {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  border: 0; border-radius: 10px; padding: 9px; background: #fbf8fc;
+}
+.dashboard .lista-reposicao li + li { margin-top: 7px; }
+.dashboard .lista-reposicao strong { overflow-wrap: anywhere; }
+.dashboard .link-reposicao { display: inline-flex; align-items: center; gap: 6px; }
 .pilha, .duas-colunas, .indicadores { display: grid; align-content: start; gap: 17px; min-width: 0; }
 .duas-colunas { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); }
 .indicadores { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -227,6 +241,30 @@ dialog::backdrop { background: #12121c88; }
   .indicadores, .indicadores.cinco { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .destaque { grid-template-columns: 1fr; }
   .destaque .ilustracao-estoque { display: none; }
+  .dashboard .indicador { grid-template-columns: minmax(0, 1fr); row-gap: 5px; }
   .filtros > .primario { flex: 1 1 100%; }
   .tabela td:first-child { min-width: 110px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dashboard > * { animation: painel-entrar 340ms ease-out backwards; }
+  .dashboard > :nth-child(2) { animation-delay: 50ms; }
+  .dashboard > :nth-child(3) { animation-delay: 100ms; }
+  .dashboard > :nth-child(4) { animation-delay: 150ms; }
+  .dashboard .barras > span:nth-child(-n+2) {
+    transform-origin: bottom;
+    animation: barra-subir 420ms 120ms ease-out backwards;
+  }
+  .dashboard .destaque .primario svg { transition: transform 160ms ease-out; }
+  .dashboard .destaque .primario:is(:hover, :focus-visible) svg { transform: translateX(4px); }
+}
+
+@keyframes painel-entrar {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes barra-subir {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
 }

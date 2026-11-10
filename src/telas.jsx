@@ -12,12 +12,12 @@ export function Dashboard({ estoque }) {
     const dia = dataAnterior(6 - indice)
     return { rotulo: dataBR(dia).slice(0, 5), movimentos: estoque.movimentos.filter(item => item.data === dia) }
   })
-  return <div className="pilha">
+  return <div className="pilha dashboard">
     <section className="destaque" aria-labelledby="destaque-titulo">
       <div>
         <p className="sobretitulo">CENTRAL DE OPERAÇÕES</p>
         <h2 id="destaque-titulo">Seu estoque em movimento<span>.</span></h2>
-        <p>Registre entradas e saídas e acompanhe o saldo em tempo real nesta demonstração.</p>
+        <p>Acompanhe o saldo e registre as movimentações do dia.</p>
         <a href="#movimentacoes" className="primario">Registrar movimentação <ArrowRight size={17} /></a>
       </div>
       <IlustracaoEstoque />
@@ -32,8 +32,14 @@ export function Dashboard({ estoque }) {
     <div className="duas-colunas">
       <Card titulo="Movimentações de estoque" resumo="Entradas e saídas nos últimos 7 dias"><Grafico grupos={semana} /></Card>
       <Card titulo="Alertas de reposição" resumo="Produtos no limite mínimo ou abaixo dele">
-        {baixos.length ? <ul className="lista">{baixos.slice(0, 5).map(item => <li key={item.id}><div><strong>{item.nome}</strong><small>Mínimo de {item.minimo} un.</small></div><span className="badge baixo">{item.quantidade} un.</span></li>)}</ul> : <p className="muted">Todos os produtos estão acima do mínimo.</p>}
-        <a className="link" href="#produtos">Ver produtos</a>
+        {baixos.length ? <ul className="lista lista-reposicao">{baixos.slice(0, 5).map(item => (
+          <li key={item.id}>
+            <span className="tile amarelo"><Package size={17} aria-hidden="true" /></span>
+            <div><strong>{item.nome}</strong><small>Mínimo de {numero.format(item.minimo)} un.</small></div>
+            <span className="badge baixo">{numero.format(item.quantidade)} un.</span>
+          </li>
+        ))}</ul> : <p className="muted">Nenhum produto ativo atingiu o estoque mínimo.</p>}
+        <a className="link link-reposicao" href="#produtos">Ver catálogo <ArrowRight size={15} aria-hidden="true" /></a>
       </Card>
     </div>
     <Card titulo="Movimentações recentes"><Historico movimentos={estoque.movimentos.slice(0, 5)} /></Card>
