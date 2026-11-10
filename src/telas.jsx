@@ -176,6 +176,7 @@ export function Movimentacoes({ estoque, atualizar }) {
   const [erro, setErro] = useState('')
   const produtos = estoque.produtos.filter(item => item.ativo)
   const produto = produtos.find(item => item.id === produtoId)
+  const TipoIcone = tipo === 'entrada' ? ArrowDownLeft : ArrowUpRight
 
   function registrar(evento) {
     evento.preventDefault()
@@ -196,12 +197,12 @@ export function Movimentacoes({ estoque, atualizar }) {
     }
   }
 
-  return <div className="pilha">
-    <div className="duas-colunas">
-      <Card titulo="Nova movimentação" resumo="Selecione o tipo de operação e informe os dados.">
+  return <div className="pilha movimentacoes">
+    <div className="duas-colunas movimentacoes-paineis">
+      <Card titulo="Nova movimentação" resumo="Escolha se as unidades entram ou saem do estoque.">
         <div className="segmentos" role="group" aria-label="Tipo de movimentação">
-          <button type="button" aria-pressed={tipo === 'entrada'} onClick={() => { setTipo('entrada'); setErro('') }}>Entrada</button>
-          <button type="button" aria-pressed={tipo === 'saida'} onClick={() => { setTipo('saida'); setErro('') }}>Saída</button>
+          <button className="tipo-entrada" type="button" aria-pressed={tipo === 'entrada'} onClick={() => { setTipo('entrada'); setErro('') }}><ArrowDownLeft size={18} aria-hidden="true" /> Entrada</button>
+          <button className="tipo-saida" type="button" aria-pressed={tipo === 'saida'} onClick={() => { setTipo('saida'); setErro('') }}><ArrowUpRight size={18} aria-hidden="true" /> Saída</button>
         </div>
         <form className="campos" onSubmit={registrar}>
           <label>Produto<select required value={produtoId} onChange={e => { setProdutoId(e.target.value); setErro('') }}><option value="">Selecione um produto</option>{produtos.map(item => <option key={item.id} value={item.id}>{item.nome}</option>)}</select></label>
@@ -209,20 +210,26 @@ export function Movimentacoes({ estoque, atualizar }) {
             <label>Quantidade<input name="quantidade" type="number" min="1" step="1" placeholder="Ex.: 10" required /></label>
             <label>Data<input name="data" type="date" min="1900-01-01" max={dataLocal()} defaultValue={dataLocal()} required /></label>
           </div>
-          <label>Observação<textarea name="observacao" rows="3" maxLength="255" placeholder="Motivo da movimentação (opcional)" /></label>
+          <label><span>Observação <small className="campo-opcional">opcional</small></span><textarea name="observacao" rows="3" maxLength="255" placeholder="Ex.: Reposição de material" /></label>
           {erro && <p className="erro" role="alert">{erro}</p>}
-          <button className="primario" disabled={!produtos.length}>Registrar movimentação</button>
+          <button className="primario" disabled={!produtos.length}><TipoIcone size={18} aria-hidden="true" /> Registrar movimentação</button>
           <p role="status" className="mensagem">{mensagem}</p>
         </form>
       </Card>
-      <Card titulo="Resumo do produto" resumo="Acompanhe o saldo antes de registrar.">
-        <div className="resumo-produto"><span className="tile rosa"><Package size={20} /></span><strong>{produto?.nome || 'Nenhum produto selecionado'}</strong>
-          {produto && <p>Saldo atual: <b>{numero.format(produto.quantidade)} un.</b></p>}
+      <Card titulo="Saldo do produto" resumo="Confira o estoque disponível antes de registrar.">
+        <div className="resumo-produto" aria-live="polite">
+          <span className="tile rosa"><Package size={20} aria-hidden="true" /></span>
+          <strong>{produto?.nome || 'Selecione um produto'}</strong>
+          {produto && <p>Saldo atual <b>{numero.format(produto.quantidade)} un.</b></p>}
         </div>
         <p className="dica"><CircleAlert size={18} /> Saídas acima do saldo disponível são bloqueadas.</p>
       </Card>
     </div>
-    <Card titulo="Histórico de movimentações"><Historico movimentos={estoque.movimentos} /></Card>
+    <div className="movimentacoes-historico">
+      <Card titulo="Histórico de movimentações" resumo={`${numero.format(estoque.movimentos.length)} ${estoque.movimentos.length === 1 ? 'registro' : 'registros'} · Ordem de lançamento`}>
+        <Historico movimentos={estoque.movimentos} />
+      </Card>
+    </div>
   </div>
 }
 
