@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ArrowUp, CircleAlert, ClipboardList, PackageSearch } from 'lucide-react'
+import { ArrowUp, ArrowUpRight, CircleAlert, ClipboardList, PackageSearch } from 'lucide-react'
 
 const sugestoes = [
   { Icone: CircleAlert, pergunta: 'Quais produtos atingiram o estoque mínimo?' },
@@ -45,16 +45,20 @@ export function StockAI() {
           <p className="muted">Vou ajudar você a encontrar produtos, conferir saldos e consultar movimentações. Enquanto isso, escolha uma pergunta para experimentar o campo de mensagem.</p>
         </div>
       </div>
-      <ul className="stockai-sugestoes">
+      <section className="stockai-atalhos" aria-labelledby="stockai-atalhos-titulo">
+        <h3 id="stockai-atalhos-titulo">Experimente perguntar</h3>
+        <ul className="stockai-sugestoes">
         {sugestoes.map(({ Icone, pergunta }) => <li key={pergunta}>
           <button className="secundario" type="button" onClick={() => {
             setRascunho(pergunta)
             campo.current.focus()
           }}>
-            <Icone size={18} aria-hidden="true" /> {pergunta}
+            <Icone size={18} aria-hidden="true" /> <span>{pergunta}</span>
+            <ArrowUpRight size={15} aria-hidden="true" />
           </button>
         </li>)}
-      </ul>
+        </ul>
+      </section>
     </div>
     <div className="stockai-compositor">
       <label htmlFor="stockai-pergunta">Sua pergunta</label>
