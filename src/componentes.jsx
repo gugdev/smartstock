@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, Boxes, ChartNoAxesCombined, ClipboardList, LayoutDashboard, LogOut, Settings, Package, Menu, X, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, Boxes, ChartNoAxesCombined, ClipboardList, LayoutDashboard, LogOut, Settings, Package, Menu, X, Eye, EyeOff, ShieldCheck, ArrowRight, Mail, LockKeyhole, CircleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { dataBR, numero, somaMovimentos } from './estoque'
 
@@ -32,7 +32,7 @@ export function IlustracaoEstoque() {
   </svg>
 }
 
-export function Formulario({ onSubmit, children, ...props }) {
+export function Formulario({ onSubmit, children, mensagemInvalida, ...props }) {
   const [validacao, setValidacao] = useState('')
 
   function validar(evento) {
@@ -40,7 +40,7 @@ export function Formulario({ onSubmit, children, ...props }) {
     const campo = evento.target
     const primeiro = evento.currentTarget.querySelector('input:invalid, select:invalid, textarea:invalid')
     if (campo !== primeiro) return
-    setValidacao(campo.validationMessage)
+    setValidacao(mensagemInvalida?.(campo) ?? campo.validationMessage)
     campo.focus()
   }
 
@@ -49,8 +49,15 @@ export function Formulario({ onSubmit, children, ...props }) {
     onSubmit(evento)
   }}>
     {children}
-    {validacao && <p className="erro" role="alert">{validacao}</p>}
+    {validacao && <p className="erro erro-formulario" role="alert"><CircleAlert size={16} aria-hidden="true" /> {validacao}</p>}
   </form>
+}
+
+function mensagemLogin(campo) {
+  if (campo.name === 'email') {
+    return campo.validity.valueMissing ? 'Informe seu e-mail.' : 'Digite um e-mail válido, como demo@smartstock.test.'
+  }
+  return campo.validity.valueMissing ? 'Informe a senha de demonstração.' : 'Use uma senha fictícia com pelo menos 6 caracteres.'
 }
 
 export function Login({ entrar }) {
@@ -73,19 +80,29 @@ export function Login({ entrar }) {
         <span className="login-rodape">SMARTSTOCK / PROJETO INTEGRADOR</span>
       </section>
       <section className="login-form">
-        <div>
+        <div className="card login-painel">
           <p className="sobretitulo">ACESSO À PLATAFORMA</p>
           <h2>Bem-vindo de volta</h2>
           <p className="muted">Entre na sua conta para continuar.</p>
-          <Formulario className="campos" onSubmit={enviar}>
-            <label>E-mail<input type="email" name="email" placeholder="seuemail@empresa.com" autoComplete="username" required /></label>
-            <label>Senha<span className="campo-senha">
-              <input type={mostrar ? 'text' : 'password'} name="senha" placeholder="••••••••" autoComplete="current-password" minLength="6" required />
-              <button type="button" className="icone" onClick={() => setMostrar(!mostrar)} aria-label={mostrar ? 'Ocultar senha' : 'Mostrar senha'}>{mostrar ? <EyeOff size={18} /> : <Eye size={18} />}</button>
-            </span></label>
-            <button className="primario">Entrar <ArrowRight size={18} /></button>
+          <Formulario className="campos" onSubmit={enviar} mensagemInvalida={mensagemLogin}>
+            <div className="login-campo">
+              <label htmlFor="login-email">E-mail</label>
+              <div className="login-input">
+                <Mail size={17} aria-hidden="true" />
+                <input id="login-email" type="email" name="email" placeholder="seuemail@empresa.com" autoComplete="username" required />
+              </div>
+            </div>
+            <div className="login-campo">
+              <label htmlFor="login-senha">Senha</label>
+              <div className="login-input campo-senha">
+                <LockKeyhole size={17} aria-hidden="true" />
+                <input id="login-senha" type={mostrar ? 'text' : 'password'} name="senha" placeholder="••••••••" autoComplete="current-password" minLength="6" aria-describedby="login-ajuda" required />
+                <button type="button" className="icone" onClick={() => setMostrar(!mostrar)} aria-label={mostrar ? 'Ocultar senha' : 'Mostrar senha'}>{mostrar ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+              </div>
+            </div>
+            <button className="primario botao-destaque">Entrar <ArrowRight size={18} aria-hidden="true" /></button>
           </Formulario>
-          <p className="nota"><ShieldCheck size={17} /> Ambiente de demonstração. Use um e-mail de teste e uma senha fictícia de pelo menos 6 caracteres.</p>
+          <p className="nota" id="login-ajuda"><ShieldCheck size={17} aria-hidden="true" /> Ambiente de demonstração. Use um e-mail de teste e uma senha fictícia de pelo menos 6 caracteres.</p>
         </div>
       </section>
     </main>
