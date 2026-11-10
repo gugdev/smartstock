@@ -126,13 +126,13 @@ export function Produtos({ estoque, atualizar, rota }) {
   }
 
   return <section className="card painel catalogo" aria-labelledby="titulo-catalogo">
-    <div className="catalogo-cabecalho">
+    <div className="painel-cabecalho">
       <span className="tile rosa"><Package size={20} aria-hidden="true" /></span>
       <div>
         <h2 id="titulo-catalogo">Catálogo de produtos</h2>
         <p className="muted">Confira os saldos e mantenha os cadastros em dia.</p>
       </div>
-      <button type="button" className="primario botao-catalogo" onClick={() => { window.location.hash = 'produtos/novo' }}><Plus size={18} aria-hidden="true" /> Novo produto</button>
+      <button type="button" className="primario botao-destaque" onClick={() => { window.location.hash = 'produtos/novo' }}><Plus size={18} aria-hidden="true" /> Novo produto</button>
     </div>
     <div className="produtos-filtros" role="group" aria-label="Filtros do catálogo">
       <label>Buscar produto<span className="busca"><Search size={17} aria-hidden="true" /><input ref={campoBusca} type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder="Ex.: Papel A4" /></span></label>
@@ -163,7 +163,7 @@ export function Produtos({ estoque, atualizar, rota }) {
           <label>Preço (R$)<input name="preco" type="number" min="0" max="99999999.99" step="0.01" defaultValue={selecionado.preco} required /></label>
         </div>
         {erro && <p className="erro" role="alert">{erro}</p>}
-        <button className="primario botao-catalogo">Salvar produto</button>
+        <button className="primario botao-destaque">Salvar produto</button>
       </form>}
     </dialog>
   </section>
@@ -225,7 +225,7 @@ export function Movimentacoes({ estoque, atualizar }) {
         <p className="dica"><CircleAlert size={18} /> Saídas acima do saldo disponível são bloqueadas.</p>
       </Card>
     </div>
-    <div className="movimentacoes-historico">
+    <div className="painel-historico">
       <Card titulo="Histórico de movimentações" resumo={`${numero.format(estoque.movimentos.length)} ${estoque.movimentos.length === 1 ? 'registro' : 'registros'} · Ordem de lançamento`}>
         <Historico movimentos={estoque.movimentos} />
       </Card>
@@ -234,8 +234,12 @@ export function Movimentacoes({ estoque, atualizar }) {
 }
 
 export function Relatorios({ estoque }) {
-  const [filtros, setFiltros] = useState({ inicio: dataAnterior(29), fim: dataLocal(), produto: '', tipo: '' })
+  const [padrao] = useState(() => ({ inicio: dataAnterior(29), fim: dataLocal(), produto: '', tipo: '' }))
+  const [filtros, setFiltros] = useState(padrao)
+  const [rascunho, setRascunho] = useState(padrao)
   const [erro, setErro] = useState('')
+  const pendente = Object.keys(filtros).some(campo => filtros[campo] !== rascunho[campo])
+  const alterado = Object.keys(padrao).some(campo => filtros[campo] !== padrao[campo])
   const movimentos = estoque.movimentos.filter(item =>
     (!filtros.inicio || item.data >= filtros.inicio) && (!filtros.fim || item.data <= filtros.fim) &&
     (!filtros.produto || item.produtoId === filtros.produto) && (!filtros.tipo || item.tipo === filtros.tipo)
@@ -252,13 +256,24 @@ export function Relatorios({ estoque }) {
 
   function aplicar(evento) {
     evento.preventDefault()
-    const novosFiltros = Object.fromEntries(new FormData(evento.currentTarget))
-    if (novosFiltros.inicio && novosFiltros.fim && novosFiltros.inicio > novosFiltros.fim) {
+    if (rascunho.inicio && rascunho.fim && rascunho.inicio > rascunho.fim) {
       setErro('A data inicial deve vir antes ou coincidir com a data final.')
       return
     }
     setErro('')
-    setFiltros(novosFiltros)
+    setFiltros(rascunho)
+  }
+
+  function alterarFiltro(evento) {
+    const { name, value } = evento.target
+    setRascunho({ ...rascunho, [name]: value })
+    setErro('')
+  }
+
+  function restaurar() {
+    setRascunho(padrao)
+    setFiltros(padrao)
+    setErro('')
   }
 
   function exportar() {
@@ -273,19 +288,25 @@ export function Relatorios({ estoque }) {
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
     const link = document.createElement('a')
     link.href = url
-    link.download = 'smartstock-movimentacoes.csv'
+    link.download = 'smartstock-movimentacoes-' + dataLocal() + '.csv'
     link.click()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
-  return <div className="pilha">
-    <Card titulo="Filtros do relatório">
-      <form className="filtros" onSubmit={aplicar}>
-        <label>De<input name="inicio" type="date" defaultValue={filtros.inicio} /></label>
-        <label>Até<input name="fim" type="date" defaultValue={filtros.fim} /></label>
-        <label>Produto<select name="produto"><option value="">Todos os produtos</option>{estoque.produtos.map(item => <option key={item.id} value={item.id}>{item.nome}</option>)}</select></label>
-        <label>Tipo<select name="tipo"><option value="">Todos os tipos</option><option value="entrada">Entrada</option><option value="saida">Saída</option></select></label>
-        <button className="primario">Aplicar filtros</button>
+  return <div className="pilha relatorios">
+    <Card titulo="Filtros do relatório" resumo="Escolha quais movimentações quer consultar.">
+      <form onSubmit={aplicar}>
+        <div className="relatorio-filtros">
+          <label>De<input name="inicio" type="date" value={rascunho.inicio} onChange={alterarFiltro} /></label>
+          <label>Até<input name="fim" type="date" value={rascunho.fim} onChange={alterarFiltro} /></label>
+          <label>Produto<select name="produto" value={rascunho.produto} onChange={alterarFiltro}><option value="">Todos os produtos</option>{estoque.produtos.map(item => <option key={item.id} value={item.id}>{item.nome}</option>)}</select></label>
+          <label>Tipo<select name="tipo" value={rascunho.tipo} onChange={alterarFiltro}><option value="">Todos os tipos</option><option value="entrada">Entrada</option><option value="saida">Saída</option></select></label>
+        </div>
+        <div className="relatorio-filtros-acoes">
+          <button className="primario botao-destaque">Aplicar filtros</button>
+          <button type="button" className="secundario" onClick={restaurar} disabled={!alterado && !pendente}>Restaurar padrão</button>
+          {pendente && <p className="muted">Aplique os filtros para atualizar a tabela e o CSV.</p>}
+        </div>
       </form>
       {erro && <p className="erro" role="alert">{erro}</p>}
     </Card>
@@ -306,10 +327,17 @@ export function Relatorios({ estoque }) {
         {estoque.produtos.map(item => <tr key={item.id}><td><strong>{item.nome}</strong></td><td>{item.categoria}</td><td>{numero.format(item.quantidade)}</td><td>{numero.format(item.minimo)}</td><td><span className={'badge ' + (item.ativo && estoqueBaixo(item) ? 'baixo' : 'neutro')}>{item.ativo ? (estoqueBaixo(item) ? 'Estoque baixo' : 'Normal') : 'Inativo'}</span></td></tr>)}
       </Tabela>
     </Card>
-    <Card titulo="Movimentações do período">
-      <button type="button" className="secundario exportar" onClick={exportar} disabled={!movimentos.length}><Download size={16} /> Exportar CSV</button>
+    <section className="card painel painel-historico" aria-labelledby="titulo-relatorio-movimentos">
+      <div className="painel-cabecalho">
+        <span className="tile rosa"><ArrowLeftRight size={20} aria-hidden="true" /></span>
+        <div>
+          <h2 id="titulo-relatorio-movimentos">Movimentações do período</h2>
+          <p className="muted" aria-live="polite">{numero.format(movimentos.length)} {movimentos.length === 1 ? 'registro' : 'registros'} · {movimentos.length ? 'O CSV inclui os registros exibidos abaixo.' : 'Nenhum registro para exportar.'}</p>
+        </div>
+        <button type="button" className="primario botao-destaque" onClick={exportar} disabled={!movimentos.length}><Download size={17} aria-hidden="true" /> Exportar CSV</button>
+      </div>
       <Historico movimentos={movimentos} />
-    </Card>
+    </section>
   </div>
 }
 
