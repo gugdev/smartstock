@@ -48,6 +48,7 @@ Na Aula 8, a API deverá fornecer os dados, validar permissões e gravar a atual
 
 ## Evidências
 
-- [Dia 1 / Aula 6 — seis referências em SVG](evidencias/dia-1/). Os nomes e e-mails foram trocados por dados de demonstração na cópia pública. O link do Figma está pendente.
+- [Dia 1 / Aula 6 — seis referências em SVG](evidencias/dia-1/). Os nomes e e-mails foram trocados por dados de demonstração na cópia pública.
+- [Protótipo navegável no Figma](https://www.figma.com/proto/sojvdu4i568LOE80M4EpzJ/SmartStock-%E2%80%94-Prot%C3%B3tipo?node-id=3-2&page-id=0%3A1&starting-point-node-id=3%3A2&scaling=scale-down&content-scaling=fixed). Clique em **Entrar** para abrir o Dashboard e use o menu lateral para visitar as demais telas.
 - [Dia 2 / Aula 7 — capturas das telas](evidencias/) e [dashboard em largura de celular](evidencias/09-dashboard-mobile.png).
 - [Vídeo de navegação](evidencias/navegacao.mp4).
