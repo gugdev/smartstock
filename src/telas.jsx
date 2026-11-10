@@ -53,9 +53,12 @@ export function Produtos({ estoque, atualizar, rota }) {
   const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState('')
   const dialogo = useRef(null)
+  const campoBusca = useRef(null)
   const categorias = [...new Set(estoque.produtos.map(item => item.categoria))].sort()
+  const buscaNormalizada = busca.trim().toLocaleLowerCase('pt-BR')
+  const temFiltros = Boolean(buscaNormalizada || categoria || status !== 'ativos')
   const produtos = estoque.produtos.filter(item =>
-    item.nome.toLocaleLowerCase('pt-BR').includes(busca.trim().toLocaleLowerCase('pt-BR')) &&
+    item.nome.toLocaleLowerCase('pt-BR').includes(buscaNormalizada) &&
     (!categoria || item.categoria === categoria) &&
     (status === 'todos' || (status === 'inativos' ? !item.ativo : item.ativo && (status !== 'baixo' || estoqueBaixo(item))))
   )
@@ -77,6 +80,12 @@ export function Produtos({ estoque, atualizar, rota }) {
 
   function fechar() {
     window.location.replace('#produtos')
+  }
+
+  function limparFiltros() {
+    setBusca('')
+    setCategoria('')
+    setStatus('ativos')
   }
 
   function salvar(evento) {
@@ -102,11 +111,7 @@ export function Produtos({ estoque, atualizar, rota }) {
       ? estoque.produtos.map(item => item.id === produto.id ? produto : item)
       : [...estoque.produtos, produto]
     atualizar({ ...estoque, produtos: lista })
-    if (!selecionado.id) {
-      setBusca('')
-      setCategoria('')
-      setStatus('ativos')
-    }
+    if (!selecionado.id) limparFiltros()
     fechar()
     setMensagem(selecionado.id ? 'Produto atualizado.' : 'Produto cadastrado.')
   }
@@ -120,15 +125,26 @@ export function Produtos({ estoque, atualizar, rota }) {
     setMensagem(produto.ativo ? 'Produto inativado.' : 'Produto reativado.')
   }
 
-  return <Card titulo="Catálogo de produtos" resumo="O saldo dos itens cadastrados muda pela tela de Movimentações.">
-    <div className="filtros produtos-filtros">
-      <label>Buscar produto<span className="busca"><Search size={17} /><input type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder="Nome do produto" /></span></label>
-      <label>Categoria<select value={categoria} onChange={e => setCategoria(e.target.value)}><option value="">Todas</option>{categorias.map(item => <option key={item}>{item}</option>)}</select></label>
+  return <section className="card painel catalogo" aria-labelledby="titulo-catalogo">
+    <div className="catalogo-cabecalho">
+      <span className="tile rosa"><Package size={20} aria-hidden="true" /></span>
+      <div>
+        <h2 id="titulo-catalogo">Catálogo de produtos</h2>
+        <p className="muted">Confira os saldos e mantenha os cadastros em dia.</p>
+      </div>
+      <button type="button" className="primario botao-catalogo" onClick={() => { window.location.hash = 'produtos/novo' }}><Plus size={18} aria-hidden="true" /> Novo produto</button>
+    </div>
+    <div className="produtos-filtros" role="group" aria-label="Filtros do catálogo">
+      <label>Buscar produto<span className="busca"><Search size={17} aria-hidden="true" /><input ref={campoBusca} type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder="Ex.: Papel A4" /></span></label>
+      <label>Categoria<select value={categoria} onChange={e => setCategoria(e.target.value)}><option value="">Todas as categorias</option>{categorias.map(item => <option key={item}>{item}</option>)}</select></label>
       <label>Status<select value={status} onChange={e => setStatus(e.target.value)}><option value="ativos">Ativos</option><option value="baixo">Estoque baixo</option><option value="inativos">Inativos</option><option value="todos">Todos</option></select></label>
-      <button className="primario" onClick={() => { window.location.hash = 'produtos/novo' }}><Plus size={17} /> Novo produto</button>
     </div>
     <p className="mensagem" role="status">{mensagem}</p>
-    <Tabela colunas={['Produto', 'Categoria', 'Quantidade', 'Estoque mín.', 'Preço', 'Status', 'Ações']}>
+    <div className="catalogo-resultados">
+      <p aria-live="polite">{numero.format(produtos.length)} {produtos.length === 1 ? 'produto exibido' : 'produtos exibidos'}</p>
+      {temFiltros && <button type="button" className="secundario pequeno" onClick={() => { limparFiltros(); campoBusca.current.focus() }}><X size={15} aria-hidden="true" /> Limpar filtros</button>}
+    </div>
+    <Tabela colunas={['Produto', 'Categoria', 'Saldo', 'Mínimo', 'Preço', 'Status', 'Ações']} vazio={temFiltros ? 'Nenhum produto encontrado com esses filtros.' : 'Nenhum produto ativo no catálogo.'}>
       {produtos.map(item => <tr key={item.id}><td><div className="produto-celula"><span aria-hidden="true"><Package size={16} /></span><strong>{item.nome}</strong></div></td><td>{item.categoria}</td>
         <td>{numero.format(item.quantidade)}</td><td>{numero.format(item.minimo)}</td><td>{moeda.format(item.preco)}</td>
         <td><span className={'badge ' + (item.ativo ? (estoqueBaixo(item) ? 'baixo' : 'entrada') : 'neutro')}>{item.ativo ? (estoqueBaixo(item) ? 'Estoque baixo' : 'Normal') : 'Inativo'}</span></td>
@@ -147,10 +163,10 @@ export function Produtos({ estoque, atualizar, rota }) {
           <label>Preço (R$)<input name="preco" type="number" min="0" max="99999999.99" step="0.01" defaultValue={selecionado.preco} required /></label>
         </div>
         {erro && <p className="erro" role="alert">{erro}</p>}
-        <button className="primario">Salvar produto</button>
+        <button className="primario botao-catalogo">Salvar produto</button>
       </form>}
     </dialog>
-  </Card>
+  </section>
 }
 
 export function Movimentacoes({ estoque, atualizar }) {
