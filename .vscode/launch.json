@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "msedge",
+      "request": "launch",
+      "name": "SmartStock no Edge (Vite em execução)",
+      "url": "http://127.0.0.1:5173",
+      "webRoot": "${workspaceFolder}"
+    }
+  ]
+}
