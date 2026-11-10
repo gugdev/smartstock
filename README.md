@@ -26,6 +26,8 @@ Abra [localhost:5173](http://127.0.0.1:5173) ou o endereço mostrado pelo Vite. 
 
 ## O que demonstrar
 
+O [roteiro do Dia 2](docs/roteiro-dia-2.md) inclui a fala de abertura, a sequência de demonstração e respostas para perguntas sobre o projeto.
+
 1. Entre e aponte os indicadores do Dashboard e o gráfico de entradas e saídas.
 2. Em **Produtos**, cadastre um item com 5 unidades e mínimo de 3. Edite o nome. O campo de saldo fica disponível apenas na criação para que os ajustes seguintes tenham histórico.
 3. Em **Movimentações**, tente retirar 6 unidades. Depois retire 2. Mostre a mensagem de erro na primeira tentativa, o saldo de 3 na segunda e a linha no histórico.
