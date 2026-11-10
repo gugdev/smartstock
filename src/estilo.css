@@ -228,13 +228,47 @@ textarea { resize: vertical; }
 .mensagem { color: #176643; font-size: .85rem; }
 .mensagem:not(:empty) { margin-top: 8px; }
 .mensagem:empty { display: none; }
-.erro { color: #a41837; background: #fff0f3; padding: 8px 10px; margin-top: 8px; border-radius: 8px; font-size: .85rem; }
+.erro { color: #a41837; background: #fff0f3; border: 1px solid #f3cad5; padding: 9px 12px; margin-top: 8px; border-radius: 8px; font-size: .85rem; }
 dialog { padding: 23px; border: 1px solid var(--borda); border-radius: var(--radius); width: min(460px, calc(100% - 28px)); max-height: 90vh; color: inherit; }
 dialog::backdrop { background: #12121c88; }
+.dialogo-acoes { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+.sugestoes { color: var(--rosa-texto); font-size: .82rem; }
+.sugestoes summary { width: fit-content; cursor: pointer; font-weight: 700; }
+.sugestoes > div { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+@supports (appearance: base-select) and selector(::picker(select)) {
+  select, select::picker(select) { appearance: base-select; }
+  select::picker(select) {
+    padding: 5px; border: 1px solid var(--borda); border-radius: 10px;
+    background: #fff; box-shadow: 0 8px 24px #24132d22; margin-top: 4px;
+  }
+  select::picker-icon { color: var(--rosa-texto); }
+  select option { padding: 8px; border-radius: 6px; white-space: normal; overflow-wrap: anywhere; }
+  select option:is(:hover, :focus-visible) { background: #f8f1f8; }
+  select option:checked { color: var(--rosa-texto); background: #fceaf3; font-weight: 700; }
+}
 .linha, .perfil { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.perfil { justify-content: flex-start; margin: 17px 0; overflow-wrap: anywhere; }
-.checkbox { display: flex; align-items: flex-start; font-weight: 550; }
-.checkbox input { accent-color: #a71757; }
+.configuracoes { align-items: start; }
+.perfil {
+  justify-content: flex-start; flex-wrap: wrap; margin: 17px 0; overflow-wrap: anywhere;
+  padding: 14px; border: 1px solid var(--borda); border-radius: 12px; background: #f8f5f9;
+}
+.perfil > span:nth-child(2) { flex: 1; min-width: 0; }
+.perfil .avatar { width: 44px; height: 44px; }
+.preferencias { min-inline-size: 0; margin: 0; padding: 10px 12px 12px; border: 1px solid var(--borda); border-radius: 10px; }
+.preferencias legend { padding: 0 5px; font-size: .85rem; font-weight: 750; }
+.preferencia-alertas { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; cursor: pointer; }
+.preferencia-alertas small { display: block; margin-top: 3px; font-weight: 500; }
+.preferencia-alertas input {
+  appearance: none; display: flex; align-items: center; width: 42px; height: 24px;
+  padding: 3px; margin: 0; border-radius: 999px; background: #746b7c; cursor: pointer;
+}
+.preferencia-alertas input::before { content: ''; width: 18px; height: 18px; border-radius: 50%; background: #fff; }
+.preferencia-alertas input:checked { background: var(--rosa-texto); justify-content: end; }
+.configuracoes-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.configuracoes-acoes .mensagem:not(:empty) {
+  display: inline-flex; align-items: center; gap: 6px; margin: 0;
+  padding: 7px 9px; border-radius: 8px; background: #e3f5ea;
+}
 .movimentacoes-paineis { align-items: start; }
 .segmentos {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;

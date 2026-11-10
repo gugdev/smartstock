@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, ArrowRight, Boxes, CircleAlert, Download, Package, Plus, Search, X } from 'lucide-react'
-import { Avatar, Card, Grafico, Historico, IlustracaoEstoque, Indicador, Tabela } from './componentes'
+import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, ArrowRight, Boxes, CircleAlert, Check, Save, Download, Package, Plus, Search, X } from 'lucide-react'
+import { Avatar, Card, Formulario, Grafico, Historico, IlustracaoEstoque, Indicador, Tabela } from './componentes'
 import { dataAnterior, dataBR, dataLocal, estoqueBaixo, moeda, numero, registrarMovimento, somaMovimentos, totalUnidades } from './estoque'
 
 export function Dashboard({ estoque }) {
@@ -53,6 +53,8 @@ export function Produtos({ estoque, atualizar, rota }) {
   const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState('')
   const dialogo = useRef(null)
+  const confirmacao = useRef(null)
+  const [produtoParaInativar, setProdutoParaInativar] = useState(null)
   const campoBusca = useRef(null)
   const categorias = [...new Set(estoque.produtos.map(item => item.categoria))].sort()
   const buscaNormalizada = busca.trim().toLocaleLowerCase('pt-BR')
@@ -117,12 +119,20 @@ export function Produtos({ estoque, atualizar, rota }) {
   }
 
   function alterarStatus(produto) {
-    if (produto.ativo && !window.confirm(`Inativar "${produto.nome}"? O histórico será preservado.`)) return
     atualizar({
       ...estoque,
       produtos: estoque.produtos.map(item => item.id === produto.id ? { ...item, ativo: !item.ativo } : item),
     })
     setMensagem(produto.ativo ? 'Produto inativado.' : 'Produto reativado.')
+  }
+
+  function pedirAlteracao(produto) {
+    if (!produto.ativo) {
+      alterarStatus(produto)
+      return
+    }
+    setProdutoParaInativar(produto)
+    confirmacao.current.showModal()
   }
 
   return <section className="card painel catalogo" aria-labelledby="titulo-catalogo">
@@ -148,15 +158,24 @@ export function Produtos({ estoque, atualizar, rota }) {
       {produtos.map(item => <tr key={item.id}><td><div className="produto-celula"><span aria-hidden="true"><Package size={16} /></span><strong>{item.nome}</strong></div></td><td>{item.categoria}</td>
         <td>{numero.format(item.quantidade)}</td><td>{numero.format(item.minimo)}</td><td>{moeda.format(item.preco)}</td>
         <td><span className={'badge ' + (item.ativo ? (estoqueBaixo(item) ? 'baixo' : 'entrada') : 'neutro')}>{item.ativo ? (estoqueBaixo(item) ? 'Estoque baixo' : 'Normal') : 'Inativo'}</span></td>
-        <td><div className="acoes"><button className="secundario pequeno" aria-label={'Editar ' + item.nome} onClick={() => { window.location.hash = 'produtos/editar/' + item.id }}>Editar</button><button className="secundario pequeno" aria-label={(item.ativo ? 'Inativar ' : 'Reativar ') + item.nome} onClick={() => alterarStatus(item)}>{item.ativo ? 'Inativar' : 'Reativar'}</button></div></td>
+        <td><div className="acoes"><button className="secundario pequeno" aria-label={'Editar ' + item.nome} onClick={() => { window.location.hash = 'produtos/editar/' + item.id }}>Editar</button><button className="secundario pequeno" aria-label={(item.ativo ? 'Inativar ' : 'Reativar ') + item.nome} onClick={() => pedirAlteracao(item)}>{item.ativo ? 'Inativar' : 'Reativar'}</button></div></td>
       </tr>)}
     </Tabela>
     <dialog ref={dialogo} aria-labelledby="titulo-produto" onCancel={evento => { evento.preventDefault(); fechar() }}>
-      {selecionado && <form className="campos" key={selecionado.id || 'novo'} onSubmit={salvar}>
+      {selecionado && <Formulario className="campos" key={selecionado.id || 'novo'} onSubmit={salvar}>
         <div className="linha"><h2 id="titulo-produto">{selecionado.id ? 'Editar produto' : 'Novo produto'}</h2><button type="button" className="icone" aria-label="Fechar" onClick={fechar}><X size={20} /></button></div>
         <label>Nome<input autoFocus name="nome" defaultValue={selecionado.nome} maxLength="120" required /></label>
-        <label>Categoria<input name="categoria" defaultValue={selecionado.categoria} list="categorias" maxLength="80" required /></label>
-        <datalist id="categorias">{categorias.map(item => <option key={item} value={item} />)}</datalist>
+        <label>Categoria<input name="categoria" defaultValue={selecionado.categoria} maxLength="80" required /></label>
+        {categorias.length > 0 && <details className="sugestoes">
+          <summary>Categorias já usadas</summary>
+          <div>{categorias.map(item => <button type="button" className="secundario pequeno" key={item} onClick={evento => {
+            const campo = evento.currentTarget.form.elements.categoria
+            campo.value = item
+            campo.dispatchEvent(new Event('input', { bubbles: true }))
+            evento.currentTarget.closest('details').open = false
+            campo.focus()
+          }}>{item}</button>)}</div>
+        </details>}
         {!selecionado.id && <label>Quantidade inicial<input name="quantidade" type="number" min="0" step="1" defaultValue="0" required /></label>}
         <div className="campos-duplos">
           <label>Estoque mínimo<input name="minimo" type="number" min="0" step="1" defaultValue={selecionado.minimo ?? 0} required /></label>
@@ -164,7 +183,20 @@ export function Produtos({ estoque, atualizar, rota }) {
         </div>
         {erro && <p className="erro" role="alert">{erro}</p>}
         <button className="primario botao-destaque">Salvar produto</button>
-      </form>}
+      </Formulario>}
+    </dialog>
+    <dialog ref={confirmacao} aria-labelledby="titulo-inativar" aria-describedby="descricao-inativar" onClose={() => setProdutoParaInativar(null)}>
+      <div className="campos">
+        <h2 id="titulo-inativar">Inativar produto?</h2>
+        <p id="descricao-inativar" className="muted"><strong>{produtoParaInativar?.nome}</strong> sairá da lista de produtos ativos. O histórico será preservado.</p>
+        <div className="dialogo-acoes">
+          <button type="button" className="secundario" onClick={() => confirmacao.current.close()}>Cancelar</button>
+          <button type="button" className="primario botao-destaque" onClick={() => {
+            alterarStatus(produtoParaInativar)
+            confirmacao.current.close()
+          }}>Confirmar inativação</button>
+        </div>
+      </div>
     </dialog>
   </section>
 }
@@ -204,7 +236,7 @@ export function Movimentacoes({ estoque, atualizar }) {
           <button className="tipo-entrada" type="button" aria-pressed={tipo === 'entrada'} onClick={() => { setTipo('entrada'); setErro('') }}><ArrowDownLeft size={18} aria-hidden="true" /> Entrada</button>
           <button className="tipo-saida" type="button" aria-pressed={tipo === 'saida'} onClick={() => { setTipo('saida'); setErro('') }}><ArrowUpRight size={18} aria-hidden="true" /> Saída</button>
         </div>
-        <form className="campos" onSubmit={registrar}>
+        <Formulario className="campos" onSubmit={registrar}>
           <label>Produto<select required value={produtoId} onChange={e => { setProdutoId(e.target.value); setErro('') }}><option value="">Selecione um produto</option>{produtos.map(item => <option key={item.id} value={item.id}>{item.nome}</option>)}</select></label>
           <div className="campos-duplos">
             <label>Quantidade<input name="quantidade" type="number" min="1" step="1" placeholder="Ex.: 10" required /></label>
@@ -214,7 +246,7 @@ export function Movimentacoes({ estoque, atualizar }) {
           {erro && <p className="erro" role="alert">{erro}</p>}
           <button className="primario" disabled={!produtos.length}><TipoIcone size={18} aria-hidden="true" /> Registrar movimentação</button>
           <p role="status" className="mensagem">{mensagem}</p>
-        </form>
+        </Formulario>
       </Card>
       <Card titulo="Saldo do produto" resumo="Confira o estoque disponível antes de registrar.">
         <div className="resumo-produto" aria-live="polite">
@@ -295,7 +327,7 @@ export function Relatorios({ estoque }) {
 
   return <div className="pilha relatorios">
     <Card titulo="Filtros do relatório" resumo="Escolha quais movimentações quer consultar.">
-      <form onSubmit={aplicar}>
+      <Formulario onSubmit={aplicar}>
         <div className="relatorio-filtros">
           <label>De<input name="inicio" type="date" value={rascunho.inicio} onChange={alterarFiltro} /></label>
           <label>Até<input name="fim" type="date" value={rascunho.fim} onChange={alterarFiltro} /></label>
@@ -307,7 +339,7 @@ export function Relatorios({ estoque }) {
           <button type="button" className="secundario" onClick={restaurar} disabled={!alterado && !pendente}>Restaurar padrão</button>
           {pendente && <p className="muted">Aplique os filtros para atualizar a tabela e o CSV.</p>}
         </div>
-      </form>
+      </Formulario>
       {erro && <p className="erro" role="alert">{erro}</p>}
     </Card>
     <div className="indicadores">
@@ -343,26 +375,42 @@ export function Relatorios({ estoque }) {
 
 export function Configuracoes({ estoque, atualizar, email }) {
   const [mensagem, setMensagem] = useState('')
+  const [erro, setErro] = useState('')
+  const { perfil } = estoque
+
   function salvar(evento) {
     evento.preventDefault()
     const dados = new FormData(evento.currentTarget)
     const nome = dados.get('nome').trim()
     if (!nome) {
-      setMensagem('Informe um nome válido.')
+      setMensagem('')
+      setErro('Informe um nome de exibição.')
+      evento.currentTarget.elements.nome.focus()
       return
     }
     atualizar({ ...estoque, perfil: { nome, alertas: dados.has('alertas') } })
+    evento.currentTarget.elements.nome.value = nome
+    setErro('')
     setMensagem('Preferências locais salvas.')
   }
-  return <div className="duas-colunas">
-    <Card titulo="Perfil e notificações" resumo="Personalize seu ambiente de demonstração.">
-      <div className="perfil"><Avatar nome={estoque.perfil.nome} /><span><strong>{estoque.perfil.nome}</strong><small>{email}</small></span></div>
-      <form className="campos" onSubmit={salvar}>
-        <label>Nome de exibição<input name="nome" defaultValue={estoque.perfil.nome} maxLength="120" required /></label>
-        <label className="checkbox"><input name="alertas" type="checkbox" defaultChecked={estoque.perfil.alertas} /> Receber alertas de estoque mínimo quando houver integração</label>
-        <button className="primario">Salvar preferências</button>
-        <p className="mensagem" role="status">{mensagem}</p>
-      </form>
+  return <div className="duas-colunas configuracoes">
+    <Card titulo="Meu perfil" resumo="Edite o nome exibido no SmartStock.">
+      <div className="perfil"><Avatar nome={perfil.nome} /><span><strong>{perfil.nome}</strong><small>{email}</small></span><span className="badge neutro">Demo</span></div>
+      <Formulario className="campos" onSubmit={salvar}>
+        <label>Nome de exibição<input name="nome" autoComplete="nickname" defaultValue={perfil.nome} maxLength="120" required onChange={() => { setErro(''); setMensagem('') }} /></label>
+        <fieldset className="preferencias">
+          <legend>Preferências</legend>
+          <label className="preferencia-alertas">
+            <span><strong>Alertas de estoque mínimo</strong><small>Preferência salva neste navegador para a futura integração.</small></span>
+            <input name="alertas" type="checkbox" role="switch" defaultChecked={perfil.alertas} onChange={() => setMensagem('')} />
+          </label>
+        </fieldset>
+        {erro && <p className="erro" role="alert">{erro}</p>}
+        <div className="configuracoes-acoes">
+          <button className="primario botao-destaque"><Save size={17} aria-hidden="true" /> Salvar preferências</button>
+          <p className="mensagem" role="status">{mensagem && <><Check size={16} aria-hidden="true" /> {mensagem}</>}</p>
+        </div>
+      </Formulario>
     </Card>
     <div className="pilha">
       <Card titulo="Integrações" resumo="Recursos planejados para a Aula 9."><ul className="lista"><li>Agente de IA <span className="badge neutro">Futuro</span></li><li>Automação com n8n <span className="badge neutro">Futuro</span></li></ul></Card>

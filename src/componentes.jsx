@@ -32,6 +32,27 @@ export function IlustracaoEstoque() {
   </svg>
 }
 
+export function Formulario({ onSubmit, children, ...props }) {
+  const [validacao, setValidacao] = useState('')
+
+  function validar(evento) {
+    evento.preventDefault()
+    const campo = evento.target
+    const primeiro = evento.currentTarget.querySelector('input:invalid, select:invalid, textarea:invalid')
+    if (campo !== primeiro) return
+    setValidacao(campo.validationMessage)
+    campo.focus()
+  }
+
+  return <form {...props} onInvalid={validar} onInput={() => setValidacao('')} onSubmit={evento => {
+    setValidacao('')
+    onSubmit(evento)
+  }}>
+    {children}
+    {validacao && <p className="erro" role="alert">{validacao}</p>}
+  </form>
+}
+
 export function Login({ entrar }) {
   const [mostrar, setMostrar] = useState(false)
   function enviar(evento) {
@@ -56,14 +77,14 @@ export function Login({ entrar }) {
           <p className="sobretitulo">ACESSO À PLATAFORMA</p>
           <h2>Bem-vindo de volta</h2>
           <p className="muted">Entre na sua conta para continuar.</p>
-          <form className="campos" onSubmit={enviar}>
+          <Formulario className="campos" onSubmit={enviar}>
             <label>E-mail<input type="email" name="email" placeholder="seuemail@empresa.com" autoComplete="username" required /></label>
             <label>Senha<span className="campo-senha">
               <input type={mostrar ? 'text' : 'password'} name="senha" placeholder="••••••••" autoComplete="current-password" minLength="6" required />
               <button type="button" className="icone" onClick={() => setMostrar(!mostrar)} aria-label={mostrar ? 'Ocultar senha' : 'Mostrar senha'}>{mostrar ? <EyeOff size={18} /> : <Eye size={18} />}</button>
             </span></label>
             <button className="primario">Entrar <ArrowRight size={18} /></button>
-          </form>
+          </Formulario>
           <p className="nota"><ShieldCheck size={17} /> Ambiente de demonstração. Use um e-mail de teste e uma senha fictícia de pelo menos 6 caracteres.</p>
         </div>
       </section>
