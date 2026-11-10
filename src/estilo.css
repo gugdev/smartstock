@@ -266,6 +266,13 @@ dialog::backdrop { background: #12121c88; }
   background: radial-gradient(ellipse at top left, #fbedf5, transparent 65%), #fff;
 }
 .stockai-conteudo h3 { margin: 0; font-size: clamp(1.35rem, 4vw, 2rem); letter-spacing: -.035em; }
+.stockai-boas-vindas { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.stockai-boas-vindas > svg { flex: 0 0 auto; width: clamp(58px, 12vw, 100px); height: auto; }
+.stockai-balao {
+  flex: 1 1 220px; min-width: 0; max-width: 530px; padding: 16px 18px;
+  border: 1px solid #efdce8; border-radius: 5px 16px 16px 16px; background: #fff;
+}
+.stockai-balao .sobretitulo { margin-bottom: 4px; }
 .stockai-sugestoes {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr));
   gap: 10px; padding: 0; margin: 20px 0 0; list-style: none;
