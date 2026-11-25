@@ -1,0 +1,1563 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SmartStock — Documentação da API — Dia 3</title>
+<link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.36.0/swagger-ui.css">
+<style>body{margin:0;background:#fafafa}header{padding:24px;font:16px/1.6 system-ui;background:#211b29;color:white}header a{color:#ff8cbd}</style></head>
+<body><header><strong>SmartStock / Dia 3 — Aula 8</strong><br>Esta cópia permite consultar as rotas e os modelos sem iniciar o projeto. É necessário acesso à internet para carregar o Swagger UI.<br>Para executar requisições, inicie API e PostgreSQL e abra <a href="http://127.0.0.1:3001/api/docs/">o Swagger local</a>. Esta cópia de consulta não envia requisições.</header>
+<div id="swagger-ui"></div><script src="https://unpkg.com/swagger-ui-dist@5.36.0/swagger-ui-bundle.js"></script>
+<script>SwaggerUIBundle({dom_id:'#swagger-ui',spec:{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SmartStock API",
+    "version": "0.3.0",
+    "description": "Dia 3 / Aula 8. API local de demonstração, sem autenticação. DELETE inativa e preserva o histórico. Quantidades são inteiras. Movimentações são transacionais; repetir o mesmo id e conteúdo não duplica o lançamento."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/api/saude": {
+      "get": {
+        "summary": "Verificar conexão com PostgreSQL",
+        "tags": [
+          "Estoque"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/estoque": {
+      "get": {
+        "summary": "Ler catálogo, histórico e perfil em uma mesma fotografia do banco",
+        "tags": [
+          "Estoque"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "produtos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Produto"
+                      }
+                    },
+                    "movimentos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Movimento"
+                      }
+                    },
+                    "perfil": {
+                      "$ref": "#/components/schemas/Perfil"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboard": {
+      "get": {
+        "summary": "Consultar indicadores e cinco movimentações recentes",
+        "tags": [
+          "Estoque"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalProdutos": {
+                      "type": "integer"
+                    },
+                    "totalUnidades": {
+                      "type": "integer"
+                    },
+                    "estoqueBaixo": {
+                      "type": "integer"
+                    },
+                    "recentes": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Movimento"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/produtos": {
+      "get": {
+        "summary": "Listar e buscar produtos",
+        "tags": [
+          "Produtos"
+        ],
+        "parameters": [
+          {
+            "name": "busca",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoria",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "todos",
+                "ativos",
+                "inativos",
+                "baixo"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Produto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Cadastrar produto e registrar saldo inicial no histórico",
+        "tags": [
+          "Produtos"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovoProduto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Produto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/produtos/{id}": {
+      "get": {
+        "summary": "Consultar um produto",
+        "tags": [
+          "Produtos"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Produto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Editar cadastro sem alterar saldo",
+        "tags": [
+          "Produtos"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditarProduto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Produto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Inativar produto preservando histórico (exclusão lógica)",
+        "tags": [
+          "Produtos"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Produto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/produtos/{id}/reativar": {
+      "patch": {
+        "summary": "Reativar produto",
+        "tags": [
+          "Produtos"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Produto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/movimentacoes": {
+      "get": {
+        "summary": "Consultar histórico por período, produto e tipo",
+        "tags": [
+          "Movimentações"
+        ],
+        "parameters": [
+          {
+            "name": "inicio",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "fim",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "produtoId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "tipo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "entrada",
+                "saida"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Movimento"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Registrar entrada ou saída e atualizar saldo atomicamente",
+        "tags": [
+          "Movimentações"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovoMovimento"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Movimento"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/perfil": {
+      "get": {
+        "summary": "Consultar perfil compartilhado da demonstração",
+        "tags": [
+          "Perfil"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Perfil"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Salvar nome e preferência de alertas",
+        "tags": [
+          "Perfil"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Perfil"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Perfil"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Falha de validação, recurso ausente, conflito de estoque ou indisponibilidade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/openapi.json": {
+      "get": {
+        "summary": "Obter especificação OpenAPI",
+        "responses": {
+          "200": {
+            "description": "Documento OpenAPI 3.1"
+          }
+        }
+      }
+    },
+    "/api/docs/": {
+      "get": {
+        "summary": "Abrir documentação interativa Swagger",
+        "responses": {
+          "200": {
+            "description": "Interface HTML do Swagger UI"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "NovoProduto": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "categoria": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "descricao": {
+            "default": "",
+            "type": "string",
+            "maxLength": 1000
+          },
+          "minimo": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "preco": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999.99
+          },
+          "quantidade": {
+            "default": 0,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "nome",
+          "categoria",
+          "descricao",
+          "minimo",
+          "preco",
+          "quantidade"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "nome": "Caixa organizadora",
+          "categoria": "Organização",
+          "descricao": "Caixa para materiais do escritório",
+          "quantidade": 5,
+          "minimo": 3,
+          "preco": 19.9
+        }
+      },
+      "EditarProduto": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "categoria": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "descricao": {
+            "default": "",
+            "type": "string",
+            "maxLength": 1000
+          },
+          "minimo": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "preco": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999.99
+          }
+        },
+        "required": [
+          "nome",
+          "categoria",
+          "descricao",
+          "minimo",
+          "preco"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "nome": "Caixa organizadora grande",
+          "categoria": "Organização",
+          "descricao": "Caixa com tampa",
+          "minimo": 3,
+          "preco": 19.9
+        }
+      },
+      "NovoMovimento": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "produtoId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "entrada",
+              "saida"
+            ]
+          },
+          "quantidade": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "data": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "observacao": {
+            "default": "",
+            "type": "string",
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "produtoId",
+          "tipo",
+          "quantidade",
+          "data",
+          "observacao"
+        ],
+        "additionalProperties": false,
+        "description": "Substitua produtoId pelo UUID obtido no cadastro ou na listagem. id é opcional e identifica uma tentativa para evitar duplicidade.",
+        "example": {
+          "produtoId": "00000000-0000-4000-8000-000000000001",
+          "tipo": "saida",
+          "quantidade": 2,
+          "data": "2026-11-25",
+          "observacao": "Uso interno"
+        }
+      },
+      "Perfil": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "alertas": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "nome",
+          "alertas"
+        ],
+        "additionalProperties": false
+      },
+      "Produto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "categoria": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "descricao": {
+            "default": "",
+            "type": "string",
+            "maxLength": 1000
+          },
+          "minimo": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "preco": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999.99
+          },
+          "quantidade": {
+            "default": 0,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "criadoEm": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Movimento": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "produtoId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "entrada",
+              "saida"
+            ]
+          },
+          "quantidade": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "data": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "observacao": {
+            "default": "",
+            "type": "string",
+            "maxLength": 255
+          },
+          "produtoNome": {
+            "type": "string"
+          },
+          "responsavel": {
+            "type": "string"
+          }
+        }
+      },
+      "Erro": {
+        "type": "object",
+        "properties": {
+          "erro": {
+            "type": "string"
+          },
+          "detalhes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "campo": {
+                  "type": "string"
+                },
+                "mensagem": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+},supportedSubmitMethods:[],validatorUrl:null});</script></body></html>

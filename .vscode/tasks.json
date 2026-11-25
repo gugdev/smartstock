@@ -1,0 +1,10 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "SmartStock: API", "type": "process", "command": "node", "args": ["--watch", "server/index.js"], "isBackground": true, "problemMatcher": [], "options": { "cwd": "${workspaceFolder}" } },
+    { "label": "SmartStock: interface", "type": "process", "command": "node", "args": ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1"], "isBackground": true, "problemMatcher": [], "options": { "cwd": "${workspaceFolder}" } },
+    { "label": "SmartStock: testar API e banco", "type": "process", "command": "node", "args": ["--test", "server/test/integracao.test.js"], "problemMatcher": [], "options": { "cwd": "${workspaceFolder}" } },
+    { "label": "SmartStock: conferir saldos no banco", "type": "process", "command": "node", "args": ["scripts/verificar-banco.js"], "problemMatcher": [], "options": { "cwd": "${workspaceFolder}" } },
+    { "label": "SmartStock: compilar interface", "type": "process", "command": "node", "args": ["node_modules/vite/bin/vite.js", "build"], "problemMatcher": [], "options": { "cwd": "${workspaceFolder}" } }
+  ]
+}

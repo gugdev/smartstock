@@ -1,60 +1,131 @@
 # SmartStock
 
-Aplicação web de gestão de estoque. Esta versão corresponde ao **Dia 2 do projeto / Aula 7** do Programa de Estágio de Férias.
+Gestão de estoque em React, Node.js, Express e PostgreSQL. **Dia 3 do projeto / Aula 8** do Programa de Estágio de Férias.
 
-![Dashboard do SmartStock com indicadores de estoque, gráfico de movimentações e alertas de reposição](evidencias/dia-2/02-dashboard.png)
+![Dashboard](evidencias/dia-3/02-dashboard.png)
 
-| Projeto | Aula | Evolução |
+| Dia | Aula | Entrega |
 | --- | --- | --- |
-| Dia 1 | 6 | Planejamento, regras de estoque, modelo de dados, arquitetura e [referências das telas em SVG](evidencias/dia-1/). |
-| **Dia 2** | **7** | **Front-end navegável em React**, com operações locais e interface responsiva. |
-| Dia 3 | 8 | Planejado. Integrar API, autenticação e banco de dados. |
-| Dia 4 | 9 | Planejado. Integração com IA e n8n, testes e finalização. |
+| 1 | 6 | Planejamento e [seis referências em SVG](evidencias/dia-1/). |
+| 2 | 7 | Interface React, operações locais, visual responsivo e prévia StockAI. [Versão preservada no GitHub](https://github.com/gugdev/smartstock/tree/5944396). |
+| **3** | **8** | **API REST, PostgreSQL, integração das telas, Swagger, DER e testes.** |
+| 4 | 9 | Planejado: IA e n8n. O envio no chat StockAI continua desabilitado. |
 
-A aba StockAI é uma prévia da interface de chat. As sugestões preenchem um rascunho editável, e o envio será habilitado com a integração da Aula 9.
+## Entrega e apresentação
 
-O [Dia 1 no Drive](https://drive.google.com/drive/folders/1pJQsR94L1FCM4bPZbb5G1WI8UZ7Rw5Nl) reúne os materiais de planejamento. O [Dia 2 no Drive](https://drive.google.com/drive/folders/1OAdEekY5SRHekIC_qeBtf2lokSnqcdz9) reúne o enunciado da Aula 7 e os links da entrega. O Figma registra a proposta visual da Aula 6. O dashboard em React usa os saldos e as movimentações da demonstração, por isso seus números podem diferir dos exemplos desenhados no protótipo.
+- [Pasta do Dia 3 no Drive](https://drive.google.com/drive/folders/17JiQq1iswXzXDqlqRbPQ8MOVKucYV633).
+- [Roteiro de apresentação e perguntas](docs/dia-3/roteiro.md).
+- [DER em imagem](docs/dia-3/der.png), [explicação do banco](docs/dia-3/modelo-de-dados.md) e [SQL executável](server/schema.sql).
+- [Especificação OpenAPI](docs/dia-3/openapi.json), [HTML de consulta para baixar e abrir](docs/dia-3/swagger.html) e [Swagger interativo local](http://127.0.0.1:3001/api/docs/).
+- [Evidências do Dia 3](evidencias/dia-3/), [vídeo da integração](evidencias/dia-3/integracao.mp4) e [conferência direta dos saldos no banco](evidencias/dia-3/consulta-banco.txt).
+
+O Swagger local exige API e PostgreSQL em execução na máquina de quem o abre. O JSON OpenAPI permite consultar a especificação sem iniciar o projeto. O HTML de consulta carrega o Swagger UI pela internet, sem enviar requisições à API. Não há uma implantação pública nesta entrega. Para regenerar JSON e HTML a partir do contrato atual, execute `npm run docs:exportar`.
 
 ## Executar
 
-Com Node.js 22.12+ e npm instalados, abra a pasta SmartStock no VS Code e rode no terminal:
+Requisitos: Node.js 22.12+ com npm e PostgreSQL 17+ em execução. Em um clone novo:
 
 ```bash
 npm ci
+```
+
+No PostgreSQL, usando um administrador, crie um papel e um banco próprios. Troque a senha de exemplo:
+
+```sql
+CREATE ROLE smartstock LOGIN PASSWORD 'ESCOLHA_UMA_SENHA_LOCAL';
+CREATE DATABASE smartstock OWNER smartstock;
+```
+
+Copie `.env.example` para `.env` e ajuste `DATABASE_URL` com usuário, senha, host, porta e banco. Se a senha tiver caracteres reservados em URL, codifique-os na URL de conexão. O arquivo `.env` fica fora do Git e do pacote de entrega.
+
+```bash
+npm run db:setup
+npm run db:demo
+```
+
+`db:setup` cria as tabelas sem apagar dados. `db:demo` preenche um catálogo vazio com seis produtos e suas entradas iniciais. Não duplica a demonstração em um catálogo preenchido.
+
+Abra dois terminais no VS Code:
+
+```bash
+# Terminal 1 — API
+npm run server
+```
+
+```bash
+# Terminal 2 — interface
 npm run dev
 ```
 
-Abra [localhost:5173](http://127.0.0.1:5173) ou o endereço mostrado pelo Vite. Para testar o login de demonstração, use `demo@smartstock.test` e `estoque123`. A senha serve apenas para a validação do formulário. Para gerar a versão de produção, rode `npm run build`.
+Abra [SmartStock](http://127.0.0.1:5173) e [Swagger](http://127.0.0.1:3001/api/docs/). A configuração padrão da API é porta **3001**; o Vite encaminha `/api` para ela. Nesta máquina o PostgreSQL portátil usa a porta **5433**, já configurada no `.env` privado; uma instalação comum pode usar **5432**.
 
-## O que demonstrar
+O acesso é **demonstrativo**: use `demo@smartstock.test` e `estoque123`. A senha apenas passa pela validação do formulário; não autentica chamadas à API. O servidor escuta somente em `127.0.0.1`. Perfil e estoque são compartilhados nesta demonstração local.
 
-O [roteiro do Dia 2](docs/roteiro-dia-2.md) inclui a fala de abertura, a sequência de demonstração e respostas para perguntas sobre o projeto.
+Depois de preparar as dependências e o banco, no Windows também é possível executar `./scripts/iniciar-local.ps1` no PowerShell. O script abre o VS Code e a interface e evita iniciar cópias de serviços que já estão ouvindo nas portas esperadas. A configuração opcional do PostgreSQL portátil desta máquina fica em `.local.json`, fora do Git.
 
-1. Entre e aponte os indicadores do Dashboard e o gráfico de entradas e saídas.
-2. Em **Produtos**, cadastre um item com 5 unidades e mínimo de 3. Edite o nome. O campo de saldo fica disponível apenas na criação para que os ajustes seguintes tenham histórico.
-3. Em **Movimentações**, tente retirar 6 unidades. Depois retire 2. Mostre a mensagem de erro na primeira tentativa, o saldo de 3 na segunda e a linha no histórico.
-4. Em **Relatórios**, filtre as saídas pelo produto e exporte o CSV.
-5. Mostre **Configurações** e reduza a janela para demonstrar o menu móvel.
+No VS Code, **Terminal → Executar Tarefa** também oferece testes da API, conferência de saldos e compilação usando diretamente o Node. As tarefas de iniciar API e interface destinam-se ao uso quando esses serviços ainda não estiverem em execução.
 
-O atalho do dashboard leva direto ao registro de uma movimentação. No gráfico, passe o mouse sobre um dia ou selecione-o com Tab para conferir as quantidades de entradas e saídas.
+Para servir a compilação pelo Express, na porta 3001:
 
-## Como o código funciona
+```bash
+npm run build
+npm start
+```
 
-| Arquivo | Responsabilidade |
+## Organização do código
+
+| Caminho | Responsabilidade |
 | --- | --- |
-| [src/main.jsx](src/main.jsx) | Guarda o estoque e a sessão demo no estado do React e seleciona a tela pelo trecho da URL após `#`. |
-| [src/componentes.jsx](src/componentes.jsx) | Reúne elementos reutilizados como navegação, cartões, tabelas, indicadores e gráfico. As telas passam dados por *props*. |
-| [src/telas.jsx](src/telas.jsx) | Implementa as telas, os formulários, os filtros e a exportação do relatório. Cadastro e edição têm URLs próprias e usam o mesmo formulário. |
-| [src/estoque.js](src/estoque.js) | Fornece dados fictícios, lê e grava o estoque no navegador e valida os movimentos antes de alterar saldo e histórico. |
-| [src/estilo.css](src/estilo.css) | Aplica a identidade rosa e preta. As *media queries* recolhem o menu e reorganizam os cartões em telas menores. |
+| `src/main.jsx` | Sessão demo, rotas por hash, carga da API e atualização das telas. |
+| `src/api.js` | Requisições HTTP e mensagens de falha. |
+| `src/telas.jsx` | Formulários, catálogo, Dashboard, filtros de relatório e CSV. |
+| `src/componentes.jsx` | Navegação, cartões, tabelas, gráfico e validação visual. |
+| `src/estoque.js` | Funções de datas, apresentação e cálculos da interface. |
+| `server/app.js` | Rotas Express e respostas de erro. |
+| `server/validacao.js` | Validação de campos com Zod. |
+| `server/estoque.js` | Regras de cadastro, saldo e histórico; SQL parametrizado. |
+| `server/db.js` | Pool PostgreSQL e transações. |
+| `server/schema.sql` | Tabelas, relacionamentos, restrições e índices. |
+| `server/openapi.js` | Documentação Swagger de todas as rotas. |
+| `server/test/` | Testes reais de API e banco em schema temporário. |
+| `docs/dia-3/` | Roteiro, DER, especificação e validação da entrega. |
+| `evidencias/dia-1/`, `dia-2/`, `dia-3/` | Registros separados da evolução. |
 
-O `localStorage` guarda os dados no navegador após recarregar. O `sessionStorage` mantém o acesso de demonstração na aba. Quando o estoque muda, o React recalcula os indicadores usando os dados atualizados. Um produto é considerado em estoque baixo quando o saldo é menor **ou igual** ao mínimo. A inativação retira o produto do estoque operacional e preserva suas movimentações.
+## API
 
-Na Aula 8, a API deverá fornecer os dados, validar permissões e gravar a atualização do saldo junto com a movimentação no banco. A interface atual usa operações locais de demonstração.
+| Método | Recurso | Uso |
+| --- | --- | --- |
+| GET | `/api/saude` | Verifica conexão com o banco. |
+| GET | `/api/estoque` | Catálogo, histórico e perfil numa mesma fotografia do banco. |
+| GET | `/api/dashboard` | Totais de produtos ativos, unidades, estoque baixo e registros recentes. |
+| GET / POST | `/api/produtos` | Busca e cadastro. Filtros: `busca`, `categoria`, `status`. |
+| GET / PUT / DELETE | `/api/produtos/{id}` | Detalhe, edição e inativação. |
+| PATCH | `/api/produtos/{id}/reativar` | Reativa o produto. |
+| GET / POST | `/api/movimentacoes` | Histórico e registro de entrada ou saída. Filtros: `inicio`, `fim`, `produtoId`, `tipo`. |
+| GET / PUT | `/api/perfil` | Perfil e preferência compartilhados da demonstração. |
+| GET | `/api/openapi.json`, `/api/docs/` | Especificação e interface Swagger. |
 
-## Evidências
+Quantidades são inteiras. Estoque baixo significa saldo menor **ou igual** ao mínimo. O cadastro guarda descrição e data de criação e registra uma entrada para o saldo inicial positivo. A edição não aceita alteração direta da quantidade. Inativar preserva o histórico e bloqueia novos lançamentos até reativar.
 
-- [Dia 1 / Aula 6 — seis referências em SVG](evidencias/dia-1/). Os nomes e e-mails foram trocados por dados de demonstração na cópia pública.
-- [Protótipo navegável no Figma](https://www.figma.com/proto/sojvdu4i568LOE80M4EpzJ/SmartStock-%E2%80%94-Prot%C3%B3tipo?node-id=3-2&page-id=0%3A1&starting-point-node-id=3%3A2&scaling=scale-down&content-scaling=fixed). Clique em **Entrar** para abrir o Dashboard e use o menu lateral para visitar as demais telas.
-- [Dia 2 / Aula 7 — capturas das telas](evidencias/dia-2/) e [dashboard em largura de celular](evidencias/dia-2/09-dashboard-mobile.png).
-- [Vídeo de navegação](evidencias/dia-2/navegacao.mp4).
+Saldo e movimento são gravados numa transação, com bloqueio do produto durante a alteração. Um UUID de tentativa evita duplicar o movimento ao repetir a mesma requisição. Nomes de produto e responsável são preservados como estavam no momento do lançamento. O histórico segue a ordem de lançamento, mesmo com data retroativa.
+
+O estoque deixou de usar `localStorage`: os dados do Dia 2 que já existirem no navegador não são apagados nem importados automaticamente. A nova demonstração do banco tem entradas iniciais completas, por isso o histórico e os totais de entradas diferem das simulações do Dia 2. Os filtros das telas e a geração do CSV continuam no React, usando os dados carregados da API; as rotas também permitem consultar produtos e histórico com filtros.
+
+## Verificação
+
+```bash
+npm test
+npm run db:verificar
+npm run build
+npm audit
+```
+
+Os testes de integração criam e removem somente um schema temporário no banco configurado. O papel precisa poder criar schemas; o dono do banco possui essa permissão. Eles cobrem concorrência, duplicidade, rollback, validações, catálogo, perfil e documentação. `db:verificar` só consulta o catálogo e compara cada saldo com seu histórico. Veja os [resultados e limites da entrega](docs/dia-3/validacao.md).
+
+## Dias anteriores
+
+- [Dia 1 no Drive](https://drive.google.com/drive/folders/1pJQsR94L1FCM4bPZbb5G1WI8UZ7Rw5Nl) e [Dia 2 no Drive](https://drive.google.com/drive/folders/1OAdEekY5SRHekIC_qeBtf2lokSnqcdz9).
+- [Roteiro do Dia 2 na versão preservada](https://github.com/gugdev/smartstock/blob/5944396/docs/roteiro-dia-2.md).
+- [Protótipo navegável no Figma](https://www.figma.com/proto/sojvdu4i568LOE80M4EpzJ/SmartStock-%E2%80%94-Prot%C3%B3tipo?node-id=3-2&page-id=0%3A1&starting-point-node-id=3%3A2&scaling=scale-down&content-scaling=fixed).
+
+O planejamento inicial mencionava outra stack. A implementação do Dia 3 segue a orientação da Aula 8: **Node.js + Express + PostgreSQL**. IA e automação seguem para o Dia 4.

@@ -1,0 +1,13 @@
+Consulta direta ao PostgreSQL: saldo cadastrado x histórico completo (ativos e inativos).
+┌─────────┬────────────────────────────────────────┬─────────────────────────────┬───────┬────────────────┬──────────┐
+│ (index) │ id                                     │ nome                        │ saldo │ saldoHistorico │ coerente │
+├─────────┼────────────────────────────────────────┼─────────────────────────────┼───────┼────────────────┼──────────┤
+│ 0       │ 'bb81954e-d063-40e0-a99c-9a0c2f0b8c4c' │ 'Caderno 10 matérias'       │ 14    │ 14             │ true     │
+│ 1       │ '858d3f93-80a9-4509-9718-69c7481eef83' │ 'Caixa organizadora grande' │ 4     │ 4              │ true     │
+│ 2       │ '502c7bca-db53-4380-a586-0c8822e2e3c7' │ 'Caneta azul'               │ 120   │ 120            │ true     │
+│ 3       │ 'c24af16e-e200-43df-8d43-28b3f01e7a03' │ 'Mouse USB'                 │ 35    │ 35             │ true     │
+│ 4       │ '74a2dac0-0420-48e7-8aed-665ab7616fab' │ 'Papel A4'                  │ 2     │ 2              │ true     │
+│ 5       │ 'fe3636a3-3a55-48f1-8ab0-2594dbab169b' │ 'Teclado USB'               │ 9     │ 9              │ true     │
+│ 6       │ '26393e8a-0ef1-4b45-9cd4-b61065f65d78' │ 'Toner impressora'          │ 1     │ 1              │ true     │
+└─────────┴────────────────────────────────────────┴─────────────────────────────┴───────┴────────────────┴──────────┘
+Todos os saldos conferem com o histórico.

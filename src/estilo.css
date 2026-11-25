@@ -434,3 +434,7 @@ dialog::backdrop { background: #12121c88; }
   from { transform: scaleY(0); }
   to { transform: scaleY(1); }
 }
+
+.operacao-api { border: 0; margin: 0; padding: 0; min-width: 0; }
+.operacao-api[aria-busy="true"] { cursor: progress; }
+.estado-api { max-width: 560px; margin: 15vh auto; padding: 32px; }

@@ -1,0 +1,18 @@
+✔ cadastro persiste todos os campos e gera um saldo inicial com histórico (71.0968ms)
+✔ busca, edição, detalhe e indicadores consultam o PostgreSQL (25.1713ms)
+✔ saída acima do saldo é rejeitada e não grava histórico (15.5517ms)
+✔ duas saídas concorrentes não conseguem gastar o mesmo saldo (155.044ms)
+✔ mesma chave repetida em paralelo não duplica uma entrada (15.1307ms)
+Falha interna na API: 23514
+✔ falha ao inserir histórico desfaz a alteração de saldo (ROLLBACK) (19.0455ms)
+✔ inativação preserva histórico, bloqueia operação e permite reativação (21.4595ms)
+✔ API valida campos, preço, data, filtros, UUID e JSON inválido (26.3952ms)
+✔ perfil persiste e filtro de histórico funciona com documentação disponível (16.8975ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1087.8717

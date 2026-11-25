@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, ArrowRight, Boxes, CircleAlert, Check, Save, Download, Package, Plus, Search, X } from 'lucide-react'
 import { Avatar, Card, Formulario, Grafico, Historico, IlustracaoEstoque, Indicador, Tabela } from './componentes'
-import { dataAnterior, dataBR, dataLocal, estoqueBaixo, moeda, numero, registrarMovimento, somaMovimentos, totalUnidades } from './estoque'
+import { dataAnterior, dataBR, dataLocal, estoqueBaixo, moeda, numero, somaMovimentos, totalUnidades } from './estoque'
+import { api } from './api'
 
 export function Dashboard({ estoque }) {
+  const [indicadores, setIndicadores] = useState(null)
+  useEffect(() => {
+    let ativo = true
+    api.dashboard().then(dados => { if (ativo) setIndicadores(dados) }).catch(() => { if (ativo) setIndicadores(null) })
+    return () => { ativo = false }
+  }, [estoque])
   const ativos = estoque.produtos.filter(produto => produto.ativo)
   const baixos = ativos.filter(estoqueBaixo)
   const mes = dataLocal().slice(0, 7)
@@ -23,9 +30,9 @@ export function Dashboard({ estoque }) {
       <IlustracaoEstoque />
     </section>
     <div className="indicadores cinco">
-      <Indicador titulo="Produtos cadastrados" valor={ativos.length} detalhe="Itens ativos no catálogo" icone={Package} />
-      <Indicador titulo="Unidades em estoque" valor={totalUnidades(ativos)} detalhe="Saldo dos produtos ativos" icone={Boxes} />
-      <Indicador titulo="Estoque baixo" valor={baixos.length} detalhe="Precisam de reposição" icone={CircleAlert} tom="amarelo" />
+      <Indicador titulo="Produtos cadastrados" valor={indicadores?.totalProdutos ?? ativos.length} detalhe="Itens ativos no catálogo" icone={Package} />
+      <Indicador titulo="Unidades em estoque" valor={indicadores?.totalUnidades ?? totalUnidades(ativos)} detalhe="Saldo dos produtos ativos" icone={Boxes} />
+      <Indicador titulo="Estoque baixo" valor={indicadores?.estoqueBaixo ?? baixos.length} detalhe="Precisam de reposição" icone={CircleAlert} tom="amarelo" />
       <Indicador titulo="Entradas no mês" valor={somaMovimentos(movimentosMes, 'entrada')} detalhe="Unidades recebidas" icone={ArrowDownLeft} tom="verde" />
       <Indicador titulo="Saídas no mês" valor={somaMovimentos(movimentosMes, 'saida')} detalhe="Unidades retiradas" icone={ArrowUpRight} tom="roxo" />
     </div>
@@ -90,12 +97,13 @@ export function Produtos({ estoque, atualizar, rota }) {
     setStatus('ativos')
   }
 
-  function salvar(evento) {
+  async function salvar(evento) {
     evento.preventDefault()
     const campos = new FormData(evento.currentTarget)
     const dados = {
       nome: campos.get('nome').trim(),
       categoria: campos.get('categoria').trim(),
+      descricao: campos.get('descricao').trim(),
       minimo: Number(campos.get('minimo')),
       preco: Number(campos.get('preco')),
     }
@@ -108,22 +116,20 @@ export function Produtos({ estoque, atualizar, rota }) {
       setErro('Informe quantidades inteiras dentro do limite suportado.')
       return
     }
-    const produto = { id: crypto.randomUUID(), ativo: true, ...selecionado, ...dados, quantidade }
-    const lista = selecionado.id
-      ? estoque.produtos.map(item => item.id === produto.id ? produto : item)
-      : [...estoque.produtos, produto]
-    atualizar({ ...estoque, produtos: lista })
-    if (!selecionado.id) limparFiltros()
-    fechar()
-    setMensagem(selecionado.id ? 'Produto atualizado.' : 'Produto cadastrado.')
+    try {
+      await atualizar(() => selecionado.id ? api.editarProduto(selecionado.id, dados) : api.criarProduto({ ...dados, quantidade }))
+      if (!selecionado.id) limparFiltros()
+      fechar()
+      setMensagem(selecionado.id ? 'Produto atualizado no banco.' : 'Produto cadastrado no banco.')
+    } catch (falha) { setErro(falha.message) }
   }
 
-  function alterarStatus(produto) {
-    atualizar({
-      ...estoque,
-      produtos: estoque.produtos.map(item => item.id === produto.id ? { ...item, ativo: !item.ativo } : item),
-    })
-    setMensagem(produto.ativo ? 'Produto inativado.' : 'Produto reativado.')
+  async function alterarStatus(produto) {
+    try {
+      await atualizar(() => api.alterarStatus(produto))
+      setMensagem(produto.ativo ? 'Produto inativado.' : 'Produto reativado.')
+      confirmacao.current.close()
+    } catch (falha) { setMensagem(falha.message) }
   }
 
   function pedirAlteracao(produto) {
@@ -166,6 +172,8 @@ export function Produtos({ estoque, atualizar, rota }) {
         <div className="linha"><h2 id="titulo-produto">{selecionado.id ? 'Editar produto' : 'Novo produto'}</h2><button type="button" className="icone" aria-label="Fechar" onClick={fechar}><X size={20} /></button></div>
         <label>Nome<input autoFocus name="nome" defaultValue={selecionado.nome} maxLength="120" required /></label>
         <label>Categoria<input name="categoria" defaultValue={selecionado.categoria} maxLength="80" required /></label>
+        <label>Descrição<textarea name="descricao" rows="2" maxLength="1000" defaultValue={selecionado.descricao} placeholder="Detalhes do produto" /></label>
+        {selecionado.criadoEm && <p className="muted">Cadastrado em {new Date(selecionado.criadoEm).toLocaleDateString('pt-BR')}.</p>}
         {categorias.length > 0 && <details className="sugestoes">
           <summary>Categorias já usadas</summary>
           <div>{categorias.map(item => <button type="button" className="secundario pequeno" key={item} onClick={evento => {
@@ -193,7 +201,6 @@ export function Produtos({ estoque, atualizar, rota }) {
           <button type="button" className="secundario" onClick={() => confirmacao.current.close()}>Cancelar</button>
           <button type="button" className="primario botao-destaque" onClick={() => {
             alterarStatus(produtoParaInativar)
-            confirmacao.current.close()
           }}>Confirmar inativação</button>
         </div>
       </div>
@@ -202,6 +209,7 @@ export function Produtos({ estoque, atualizar, rota }) {
 }
 
 export function Movimentacoes({ estoque, atualizar }) {
+  const tentativa = useRef(null)
   const [tipo, setTipo] = useState('entrada')
   const [produtoId, setProdutoId] = useState('')
   const [mensagem, setMensagem] = useState('')
@@ -210,17 +218,20 @@ export function Movimentacoes({ estoque, atualizar }) {
   const produto = produtos.find(item => item.id === produtoId)
   const TipoIcone = tipo === 'entrada' ? ArrowDownLeft : ArrowUpRight
 
-  function registrar(evento) {
+  async function registrar(evento) {
     evento.preventDefault()
     setErro('')
     setMensagem('')
     const formulario = evento.currentTarget
     const campos = new FormData(formulario)
+    const dados = { produtoId, tipo, quantidade: Number(campos.get('quantidade')), data: campos.get('data'), observacao: campos.get('observacao').trim() }
+    const assinatura = JSON.stringify(dados)
+    if (tentativa.current?.assinatura !== assinatura) tentativa.current = { assinatura, id: crypto.randomUUID() }
     try {
-      atualizar(registrarMovimento(estoque, {
-        produtoId, tipo, quantidade: Number(campos.get('quantidade')),
-        data: campos.get('data'), observacao: campos.get('observacao').trim(),
+      await atualizar(() => api.registrarMovimento({
+        id: tentativa.current.id, ...dados,
       }))
+      tentativa.current = null
       formulario.elements.quantidade.value = ''
       formulario.elements.observacao.value = ''
       setMensagem('Movimentação registrada. Saldo atualizado.')
@@ -378,9 +389,10 @@ export function Configuracoes({ estoque, atualizar, email }) {
   const [erro, setErro] = useState('')
   const { perfil } = estoque
 
-  function salvar(evento) {
+  async function salvar(evento) {
     evento.preventDefault()
-    const dados = new FormData(evento.currentTarget)
+    const formulario = evento.currentTarget
+    const dados = new FormData(formulario)
     const nome = dados.get('nome').trim()
     if (!nome) {
       setMensagem('')
@@ -388,10 +400,12 @@ export function Configuracoes({ estoque, atualizar, email }) {
       evento.currentTarget.elements.nome.focus()
       return
     }
-    atualizar({ ...estoque, perfil: { nome, alertas: dados.has('alertas') } })
-    evento.currentTarget.elements.nome.value = nome
-    setErro('')
-    setMensagem('Preferências locais salvas.')
+    try {
+      await atualizar(() => api.salvarPerfil({ nome, alertas: dados.has('alertas') }))
+      formulario.elements.nome.value = nome
+      setErro('')
+      setMensagem('Preferências salvas no banco.')
+    } catch (falha) { setErro(falha.message); setMensagem('') }
   }
   return <div className="duas-colunas configuracoes">
     <Card titulo="Meu perfil" resumo="Edite o nome exibido no SmartStock.">
@@ -401,7 +415,7 @@ export function Configuracoes({ estoque, atualizar, email }) {
         <fieldset className="preferencias">
           <legend>Preferências</legend>
           <label className="preferencia-alertas">
-            <span><strong>Alertas de estoque mínimo</strong><small>Preferência salva neste navegador para a futura integração.</small></span>
+            <span><strong>Alertas de estoque mínimo</strong><small>Preferência salva no banco para a futura integração.</small></span>
             <input name="alertas" type="checkbox" role="switch" defaultChecked={perfil.alertas} onChange={() => setMensagem('')} />
           </label>
         </fieldset>
@@ -414,7 +428,7 @@ export function Configuracoes({ estoque, atualizar, email }) {
     </Card>
     <div className="pilha">
       <Card titulo="Integrações" resumo="Recursos planejados para a Aula 9."><ul className="lista"><li>Agente de IA <span className="badge neutro">Futuro</span></li><li>Automação com n8n <span className="badge neutro">Futuro</span></li></ul></Card>
-      <Card titulo="Segurança e acesso" resumo="Autenticação e permissões de usuários entram com a API da Aula 8." />
+      <Card titulo="Segurança e acesso" resumo="Acesso demonstrativo em ambiente local. O e-mail identifica a sessão desta aba; autenticação real e permissões ainda não foram implementadas." />
     </div>
   </div>
 }
