@@ -16,7 +16,8 @@
     .painel { background: white; border: 1px solid #e2dce7; border-radius: 14px; overflow: hidden; }
     .controles { padding: 20px; display: flex; gap: 12px; align-items: end; flex-wrap: wrap; border-bottom: 1px solid #eee8f0; }
     label { font-size: 12px; font-weight: 600; display: grid; gap: 7px; flex: 1; min-width: 220px; }
-    input { font: inherit; font-size: 14px; padding: 10px 12px; border: 1px solid #cbc3d3; border-radius: 8px; width: 100%; }
+    input, select { font: inherit; font-size: 14px; padding: 10px 12px; border: 1px solid #cbc3d3; border-radius: 8px; width: 100%; background: white; color: inherit; }
+    label.filtro { flex: 0 1 170px; min-width: 150px; }
     button { cursor: pointer; font: inherit; font-size: 13px; font-weight: 600; border: 1px solid #d5cedd; background: white; border-radius: 8px; padding: 10px 13px; transition: background 150ms; }
     button:hover { background: #f6edf2; }
     button:disabled { opacity: .55; cursor: wait; }
@@ -39,6 +40,7 @@
     .baixo { color: #8b5c10; font-weight: 700; }
     .badge { display: inline-block; border-radius: 20px; padding: 4px 9px; font-size: 11px; background: #e7f3eb; color: #247044; }
     .badge.inativo { background: #eeeaf1; color: #74677e; }
+    .badge.alerta { display: block; width: max-content; margin-top: 6px; background: #fff1d6; color: #86530a; font-weight: 600; }
     .vazio { padding: 30px; text-align: center; color: #786b83; }
     .nota { font-size: 12px; color: #796c83; margin: 14px 2px; line-height: 1.6; }
     #aviso { color: #a12036; font-size: 13px; }
@@ -59,6 +61,8 @@
     <section class="painel" aria-label="Produtos do PostgreSQL">
       <div class="controles">
         <label>Buscar produto, categoria ou ID<input id="busca" type="search" placeholder="Ex.: Gillete, Papel A4 ou um ID" autocomplete="off"></label>
+        <label class="filtro">Status<select id="status"><option value="todos">Todos</option><option value="ativos">Ativos</option><option value="inativos">Inativos</option></select></label>
+        <label class="filtro">Ordenar por<select id="ordem"><option value="recente">Cadastro mais recente</option><option value="nome">Nome · A a Z</option><option value="saldo">Saldo · menor primeiro</option></select></label>
         <button id="alternar" type="button" aria-pressed="true">Pausar atualização</button>
         <button id="atualizar" class="primario" type="button">Atualizar agora</button>
       </div>
@@ -99,7 +103,17 @@
 
     function desenhar() {
       const busca = normalizar($('busca').value.trim())
-      const filtrados = produtos.filter(p => normalizar(`${p.nome} ${p.categoria} ${p.id}`).includes(busca))
+      const status = $('status').value
+      const porNome = (a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }) || a.id.localeCompare(b.id)
+      const ordens = {
+        recente: (a, b) => new Date(b.criadoEm) - new Date(a.criadoEm) || porNome(a, b),
+        nome: porNome,
+        saldo: (a, b) => a.quantidade - b.quantidade || porNome(a, b),
+      }
+      const filtrados = produtos.filter(p =>
+        (status === 'todos' || (status === 'ativos' ? p.ativo : !p.ativo)) &&
+        normalizar(`${p.nome} ${p.categoria} ${p.id}`).includes(busca)
+      ).sort(ordens[$('ordem').value])
       const fragmento = document.createDocumentFragment()
       for (const p of filtrados) {
         const linha = document.createElement('tr')
@@ -126,7 +140,13 @@
         })
         identificador.append(codigo, copiar)
         id.append(identificador)
-        celula(linha, p.nome, 'nome')
+        const nome = celula(linha, p.nome, 'nome')
+        if (p.ativo && p.quantidade <= p.minimo) {
+          const alerta = document.createElement('span')
+          alerta.className = 'badge alerta'
+          alerta.textContent = 'Estoque baixo'
+          nome.append(alerta)
+        }
         celula(linha, p.categoria)
         celula(linha, numero.format(p.quantidade), 'numero' + (p.ativo && p.quantidade <= p.minimo ? ' baixo' : ''))
         celula(linha, numero.format(p.minimo), 'numero')
@@ -140,7 +160,7 @@
       }
       if (!filtrados.length) {
         const linha = document.createElement('tr')
-        celula(linha, 'Nenhum produto encontrado.', 'vazio').colSpan = 7
+        celula(linha, produtos.length ? 'Nenhum produto corresponde à busca e ao status selecionados.' : 'Nenhum produto cadastrado.', 'vazio').colSpan = 7
         fragmento.append(linha)
       }
       $('produtos').replaceChildren(fragmento)
@@ -172,7 +192,7 @@
         const assinatura = JSON.stringify(dados)
         if (assinatura !== ultimaAssinatura) {
           anterior = ultimaAssinatura ? new Map(produtos.map(p => [p.id, JSON.stringify(p)])) : null
-          produtos = dados.sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm) || a.nome.localeCompare(b.nome))
+          produtos = dados
           ultimaAssinatura = assinatura
           desenhar()
           anterior = null
@@ -194,6 +214,8 @@
     }
 
     $('busca').addEventListener('input', desenhar)
+    $('status').addEventListener('change', desenhar)
+    $('ordem').addEventListener('change', desenhar)
     $('atualizar').addEventListener('click', atualizar)
     $('alternar').addEventListener('click', () => {
       automatico = !automatico

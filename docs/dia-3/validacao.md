@@ -33,6 +33,8 @@ Verificação executada em 25/11/2026, em Windows, com Node.js 24, Express 5 e P
 
 Complemento de visualização: o **Banco ao vivo**, em `/monitor-banco`, foi aberto no navegador integrado do VS Code e conferido com os dados reais, incluindo a Gillete e seu ID completo. Busca por nome e ID, botão de copiar, pausa e atualização manual foram verificados. Em um schema temporário separado, a tabela passou de vazia para um produto com saldo 7 após cadastrar 5 unidades e lançar uma entrada de 2, sem recarregar a página. O schema de teste foi removido ao terminar. Os nove testes de integração também passaram após a inclusão do monitor. A captura `12-monitor-banco.png` registra a aba no VS Code.
 
+Na revisão final, os nove testes passaram novamente e o build concluiu. Em outro schema temporário, três produtos permitiram verificar Todos / Ativos / Inativos, ordenação por nome com acento, saldo crescente e cadastro recente, busca combinada, ausência de resultados e cópia do UUID. O produto ativo com saldo igual ao mínimo recebeu a etiqueta; o inativo com saldo zero não recebeu. Após uma entrada de 9 unidades, o saldo passou de 2 para 11 automaticamente, a etiqueta desapareceu e busca/ordenação permaneceram selecionadas. Pausa e atualização manual também foram conferidas, sem erros JavaScript capturados. O catálogo real foi preservado.
+
 O monitor faz consultas periódicas de leitura pela API a cada 2 segundos enquanto está visível. Não é uma assinatura de eventos do PostgreSQL. Ele exige API e banco ligados e mantém os últimos dados recebidos se a consulta falhar, sinalizando a indisponibilidade. A grade da extensão PostgreSQL é uma ferramenta separada e continua exigindo reexecução da consulta SQL.
 
 ## Limites comunicados na apresentação
