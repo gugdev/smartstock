@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartStock — Banco ao vivo</title>
+  <style>
+    :root { font-family: 'Segoe UI', sans-serif; color: #231d2b; background: #f5f3f6; color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { background: #211b29; color: white; padding: 24px 30px; border-top: 4px solid #ff288c; }
+    header strong { color: #ff87bc; font-size: 12px; letter-spacing: .12em; }
+    h1 { font-size: 28px; margin: 7px 0; }
+    header p { color: #d1c8d8; margin: 0; font-size: 14px; }
+    main { padding: 24px 28px; }
+    .painel { background: white; border: 1px solid #e2dce7; border-radius: 14px; overflow: hidden; }
+    .controles { padding: 20px; display: flex; gap: 12px; align-items: end; flex-wrap: wrap; border-bottom: 1px solid #eee8f0; }
+    label { font-size: 12px; font-weight: 600; display: grid; gap: 7px; flex: 1; min-width: 220px; }
+    input { font: inherit; font-size: 14px; padding: 10px 12px; border: 1px solid #cbc3d3; border-radius: 8px; width: 100%; }
+    button { cursor: pointer; font: inherit; font-size: 13px; font-weight: 600; border: 1px solid #d5cedd; background: white; border-radius: 8px; padding: 10px 13px; transition: background 150ms; }
+    button:hover { background: #f6edf2; }
+    button:disabled { opacity: .55; cursor: wait; }
+    button.primario { color: white; background: #b91c66; border-color: #b91c66; }
+    button.primario:hover { background: #961650; }
+    :focus-visible { outline: 3px solid #ff9dc9; outline-offset: 2px; }
+    .estado { display: flex; gap: 12px 22px; flex-wrap: wrap; justify-content: space-between; padding: 13px 20px; font-size: 12px; color: #6f627a; background: #fcfafc; }
+    #situacao { font-weight: 600; color: #247044; }
+    #situacao.pausado { color: #815b16; }
+    #situacao.falha { color: #a12036; }
+    .rolagem { overflow: auto; max-height: 68vh; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; position: sticky; top: 0; background: #f1edf4; color: #71627d; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; z-index: 1; }
+    td, th { padding: 13px 15px; border-bottom: 1px solid #eee8f0; white-space: nowrap; }
+    td.nome { font-weight: 600; }
+    .identificador { display: flex; gap: 10px; align-items: center; }
+    code { font: 12px Consolas, monospace; user-select: all; color: #65536e; }
+    .copiar { padding: 5px 7px; font-size: 11px; }
+    .numero { text-align: right; font-variant-numeric: tabular-nums; }
+    .baixo { color: #8b5c10; font-weight: 700; }
+    .badge { display: inline-block; border-radius: 20px; padding: 4px 9px; font-size: 11px; background: #e7f3eb; color: #247044; }
+    .badge.inativo { background: #eeeaf1; color: #74677e; }
+    .vazio { padding: 30px; text-align: center; color: #786b83; }
+    .nota { font-size: 12px; color: #796c83; margin: 14px 2px; line-height: 1.6; }
+    #aviso { color: #a12036; font-size: 13px; }
+    @media (prefers-reduced-motion: no-preference) {
+      tr.alterado td { animation: destacar 1.8s ease-out; }
+      @keyframes destacar { from { background: #ffe1ef; } to { background: white; } }
+    }
+    @media (max-width: 600px) { header { padding: 20px; } main { padding: 15px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>SMARTSTOCK / CONSULTA DO BANCO</strong>
+    <h1>Banco ao vivo<span style="color:#ff288c">.</span></h1>
+    <p>Dados do PostgreSQL consultados pela API a cada 2 segundos.</p>
+  </header>
+  <main>
+    <section class="painel" aria-label="Produtos do PostgreSQL">
+      <div class="controles">
+        <label>Buscar produto, categoria ou ID<input id="busca" type="search" placeholder="Ex.: Gillete, Papel A4 ou um ID" autocomplete="off"></label>
+        <button id="alternar" type="button" aria-pressed="true">Pausar atualização</button>
+        <button id="atualizar" class="primario" type="button">Atualizar agora</button>
+      </div>
+      <div class="estado">
+        <span id="situacao" role="status">Conectando à API…</span>
+        <span id="contagem">Carregando produtos…</span>
+        <span id="horario">Aguardando primeira consulta</span>
+      </div>
+      <div class="rolagem">
+        <table>
+          <thead><tr><th scope="col">ID do produto</th><th scope="col">Produto</th><th scope="col">Categoria</th><th scope="col" class="numero">Estoque</th><th scope="col" class="numero">Mínimo</th><th scope="col" class="numero">Preço</th><th scope="col">Status</th></tr></thead>
+          <tbody id="produtos"><tr><td colspan="7" class="vazio">Carregando dados do PostgreSQL…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    <p id="aviso" role="alert" hidden></p>
+    <p class="nota">Somente consulta. Cadastros e movimentações são feitos pelo site ou pelo Swagger. Novos registros e alterações aparecem automaticamente enquanto esta aba estiver visível. Produtos inativos também são exibidos.</p>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id)
+    const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+    const numero = new Intl.NumberFormat('pt-BR')
+    let produtos = []
+    let anterior = null
+    let automatico = true
+    let ocupado = false
+    let temporizador
+    let ultimaAssinatura = ''
+    const normalizar = texto => String(texto).normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-BR')
+
+    function celula(linha, texto, classe = '') {
+      const td = document.createElement('td')
+      td.textContent = texto
+      td.className = classe
+      linha.append(td)
+      return td
+    }
+
+    function desenhar() {
+      const busca = normalizar($('busca').value.trim())
+      const filtrados = produtos.filter(p => normalizar(`${p.nome} ${p.categoria} ${p.id}`).includes(busca))
+      const fragmento = document.createDocumentFragment()
+      for (const p of filtrados) {
+        const linha = document.createElement('tr')
+        if (anterior && anterior.get(p.id) !== JSON.stringify(p)) linha.className = 'alterado'
+        const id = celula(linha, '')
+        const identificador = document.createElement('div')
+        identificador.className = 'identificador'
+        const codigo = document.createElement('code')
+        codigo.textContent = p.id
+        const copiar = document.createElement('button')
+        copiar.type = 'button'
+        copiar.className = 'copiar'
+        copiar.textContent = 'Copiar'
+        copiar.setAttribute('aria-label', `Copiar ID de ${p.nome}`)
+        copiar.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(p.id)
+            copiar.textContent = 'Copiado'
+            setTimeout(() => { copiar.textContent = 'Copiar' }, 1500)
+          } catch {
+            $('aviso').textContent = 'Selecione o ID e use Ctrl+C para copiar nesta visualização.'
+            $('aviso').hidden = false
+          }
+        })
+        identificador.append(codigo, copiar)
+        id.append(identificador)
+        celula(linha, p.nome, 'nome')
+        celula(linha, p.categoria)
+        celula(linha, numero.format(p.quantidade), 'numero' + (p.ativo && p.quantidade <= p.minimo ? ' baixo' : ''))
+        celula(linha, numero.format(p.minimo), 'numero')
+        celula(linha, moeda.format(p.preco), 'numero')
+        const estado = celula(linha, '')
+        const badge = document.createElement('span')
+        badge.className = 'badge' + (p.ativo ? '' : ' inativo')
+        badge.textContent = p.ativo ? 'Ativo' : 'Inativo'
+        estado.append(badge)
+        fragmento.append(linha)
+      }
+      if (!filtrados.length) {
+        const linha = document.createElement('tr')
+        celula(linha, 'Nenhum produto encontrado.', 'vazio').colSpan = 7
+        fragmento.append(linha)
+      }
+      $('produtos').replaceChildren(fragmento)
+      $('contagem').textContent = `${filtrados.length} de ${produtos.length} produtos · ${produtos.filter(p => p.ativo).length} ativos`
+    }
+
+    function indicar(texto, classe = '') {
+      $('situacao').textContent = texto
+      $('situacao').className = classe
+    }
+
+    function agendar() {
+      clearTimeout(temporizador)
+      if (automatico && !document.hidden) temporizador = setTimeout(atualizar, 2000)
+    }
+
+    async function atualizar() {
+      clearTimeout(temporizador)
+      if (ocupado) return
+      ocupado = true
+      $('atualizar').disabled = true
+      const controlador = new AbortController()
+      const limite = setTimeout(() => controlador.abort(), 5000)
+      try {
+        const resposta = await fetch('/api/produtos?status=todos', { cache: 'no-store', signal: controlador.signal })
+        if (!resposta.ok) throw new Error('API indisponível')
+        const dados = await resposta.json()
+        if (!Array.isArray(dados)) throw new Error('Resposta inválida')
+        const assinatura = JSON.stringify(dados)
+        if (assinatura !== ultimaAssinatura) {
+          anterior = ultimaAssinatura ? new Map(produtos.map(p => [p.id, JSON.stringify(p)])) : null
+          produtos = dados.sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm) || a.nome.localeCompare(b.nome))
+          ultimaAssinatura = assinatura
+          desenhar()
+          anterior = null
+        }
+        $('horario').textContent = `Última consulta: ${new Date().toLocaleTimeString('pt-BR')}`
+        indicar(automatico ? '● Atualização automática · a cada 2 s' : 'Ⅱ Atualização pausada', automatico ? '' : 'pausado')
+        $('aviso').hidden = true
+      } catch {
+        indicar('● Sem conexão com a API', 'falha')
+        $('aviso').textContent = 'Não foi possível consultar os dados. Confira se a API e o PostgreSQL estão ligados. Os últimos dados recebidos foram mantidos.'
+        $('aviso').hidden = false
+        if (!ultimaAssinatura) $('produtos').firstElementChild.firstElementChild.textContent = 'Aguardando conexão com o banco.'
+      } finally {
+        clearTimeout(limite)
+        ocupado = false
+        $('atualizar').disabled = false
+        agendar()
+      }
+    }
+
+    $('busca').addEventListener('input', desenhar)
+    $('atualizar').addEventListener('click', atualizar)
+    $('alternar').addEventListener('click', () => {
+      automatico = !automatico
+      $('alternar').textContent = automatico ? 'Pausar atualização' : 'Retomar atualização'
+      $('alternar').setAttribute('aria-pressed', String(automatico))
+      if (automatico) atualizar()
+      else { clearTimeout(temporizador); indicar('Ⅱ Atualização pausada', 'pausado') }
+    })
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) clearTimeout(temporizador)
+      else if (automatico) atualizar()
+    })
+    atualizar()
+  </script>
+</body>
+</html>

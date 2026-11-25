@@ -74,6 +74,10 @@ npm start
 
 ## Organização do código
 
+Para acompanhar cadastros e movimentações automaticamente, abra o [Banco ao vivo](http://127.0.0.1:3001/monitor-banco), com a API e o PostgreSQL em execução. O monitor consulta `GET /api/produtos?status=todos` a cada **2 segundos** enquanto a aba está visível. Ele mostra o **ID completo**, permite copiar o ID, buscar por produto/categoria/ID e pausar ou retomar as consultas. É uma página de consulta dos dados do PostgreSQL pela API; não altera o banco.
+
+Nesta instalação do VS Code, pressione **F1**, escolha **Browser: Open Integrated Browser** e informe `http://127.0.0.1:3001/monitor-banco` para deixar a tabela aberta dentro do editor. Ela também funciona no navegador comum. A grade de resultados da extensão PostgreSQL continua mostrando o resultado da última consulta SQL executada; a atualização periódica pertence à nova aba **Banco ao vivo**.
+
 | Caminho | Responsabilidade |
 | --- | --- |
 | `src/main.jsx` | Sessão demo, rotas por hash, carga da API e atualização das telas. |
@@ -87,6 +91,7 @@ npm start
 | `server/db.js` | Pool PostgreSQL e transações. |
 | `server/schema.sql` | Tabelas, relacionamentos, restrições e índices. |
 | `server/openapi.js` | Documentação Swagger de todas as rotas. |
+| `scripts/monitor-banco.html` | Monitor de consulta com atualização periódica, IDs completos e busca. Servido em `/monitor-banco`. |
 | `server/test/` | Testes reais de API e banco em schema temporário. |
 | `docs/dia-3/` | Roteiro, DER, especificação e validação da entrega. |
 | `evidencias/dia-1/`, `dia-2/`, `dia-3/` | Registros separados da evolução. |

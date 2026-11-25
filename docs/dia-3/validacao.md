@@ -29,6 +29,12 @@ Verificação executada em 25/11/2026, em Windows, com Node.js 24, Express 5 e P
 - **Reinício de API e PostgreSQL:** saldo 4 e inativação do produto da demonstração foram preservados. Resultado em `reinicio.txt`.
 - `npm run build` concluiu; `npm audit` não apontou vulnerabilidades nas dependências instaladas. O Vite foi atualizado dentro da versão 7.
 
+## Monitor automático no VS Code
+
+Complemento de visualização: o **Banco ao vivo**, em `/monitor-banco`, foi aberto no navegador integrado do VS Code e conferido com os dados reais, incluindo a Gillete e seu ID completo. Busca por nome e ID, botão de copiar, pausa e atualização manual foram verificados. Em um schema temporário separado, a tabela passou de vazia para um produto com saldo 7 após cadastrar 5 unidades e lançar uma entrada de 2, sem recarregar a página. O schema de teste foi removido ao terminar. Os nove testes de integração também passaram após a inclusão do monitor. A captura `12-monitor-banco.png` registra a aba no VS Code.
+
+O monitor faz consultas periódicas de leitura pela API a cada 2 segundos enquanto está visível. Não é uma assinatura de eventos do PostgreSQL. Ele exige API e banco ligados e mantém os últimos dados recebidos se a consulta falhar, sinalizando a indisponibilidade. A grade da extensão PostgreSQL é uma ferramenta separada e continua exigindo reexecução da consulta SQL.
+
 ## Limites comunicados na apresentação
 
 O login permanece demonstrativo e não autentica chamadas à API. O servidor fica limitado a localhost. O perfil é compartilhado, e o nome do responsável não comprova identidade. O histórico e o catálogo são carregados integralmente; paginação e permissões ficam para evolução posterior. A preferência de alertas é persistida, mas não dispara notificações. IA e n8n não estão implementados nesta etapa.

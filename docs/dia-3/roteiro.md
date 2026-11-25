@@ -11,6 +11,8 @@
 3. Cadastre um produto com nome, categoria, descrição, 5 unidades, mínimo 3 e preço 19,90. Mostre que o cadastro foi salvo. Edite a descrição e mostre a data de cadastro. O saldo não pode ser alterado pela edição.
 4. Em Movimentações, tente uma saída de 6 unidades. Ela deve falhar. Faça uma saída de 2: saldo 3. Depois uma entrada de 1: saldo 4. O histórico também inclui a entrada do saldo inicial.
 5. Recarregue a página. O saldo e o histórico continuam no PostgreSQL; a tela não depende mais do `localStorage`.
+
+   Como demonstração adicional, abra `http://127.0.0.1:3001/monitor-banco` no navegador integrado do VS Code. A aba **Banco ao vivo** consulta a API a cada 2 segundos, mostrando novos cadastros e alterações de saldo sem precisar reexecutar uma consulta SQL. Os IDs completos ficam visíveis e podem ser copiados para o Swagger. O monitor só consulta; as alterações são realizadas pelo site ou pela API.
 6. Em Relatórios, filtre o produto e o tipo Saída e exporte o CSV. Compare a linha exportada com a tabela.
 7. Em Configurações, salve o nome de exibição e recarregue. O perfil desta demonstração é compartilhado, e a preferência de alertas fica guardada para a integração futura.
 8. Abra [Swagger local](http://127.0.0.1:3001/api/docs/). Expanda `GET /api/produtos`, clique em **Try it out**, informe a busca e execute. Mostre o status 200 e o JSON. Mostre o esquema do `POST /api/movimentacoes` e a possibilidade de erro 409 por saldo insuficiente.

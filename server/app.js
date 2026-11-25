@@ -11,6 +11,10 @@ import { openapi } from './openapi.js'
 export const app = express()
 app.disable('x-powered-by')
 app.use(express.json({ limit: '32kb' }))
+app.get('/monitor-banco', (_req, res) => {
+  res.set('Cache-Control', 'no-store')
+  res.sendFile(fileURLToPath(new URL('../scripts/monitor-banco.html', import.meta.url)))
+})
 app.get('/api/saude', async (_req, res) => { await pool.query('SELECT 1'); res.json({ status: 'ok' }) })
 app.get('/api/openapi.json', (_req, res) => res.json(openapi))
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi))
